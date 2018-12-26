@@ -8,12 +8,29 @@ const db = mongoose.connection
 
 const videoSchema = mongoose.Schema({
     img: String,
+    video: String,
+    isVideo: {
+        type: Boolean,
+        default: 0
+    },
     title: String,
     durationTime: Number,
-    watched: Number,
-    common: Number,
-    collect: Number,
-    share: Number,
+    watched: {
+        type: Number,
+        default: 0
+    },
+    common: {
+        type: Number,
+        default: 0
+    },
+    collect: {
+        type: Number,
+        default: 0
+    },
+    share: {
+        type: Number,
+        default: 0
+    },
     ReleasedTime: Number,
     handout: Array,
     test: {
