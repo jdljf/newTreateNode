@@ -12,6 +12,7 @@ var naireRouter = require('./routes/naire')
 var curriculumRouter = require('./routes/curriculum')
 var applyRouter = require('./routes/apply')
 var aboutRouter = require('./routes/about')
+var subjectRouter = require('./routes/subject')
 
 var app = express();
 
@@ -37,6 +38,7 @@ app.use(naireRouter);
 app.use(curriculumRouter);
 app.use(applyRouter);
 app.use(aboutRouter);
+app.use(subjectRouter)
 
 // 后端页面请求接口时错误的显示
 app.use(function(req, res, next) {
