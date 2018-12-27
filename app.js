@@ -14,6 +14,7 @@ var applyRouter = require('./routes/apply')
 var aboutRouter = require('./routes/about')
 var subjectRouter = require('./routes/subject')
 var mainRouter = require('./routes/main')
+var messageRouter = require('./routes/message')
 
 var app = express();
 
@@ -41,7 +42,7 @@ app.use(applyRouter);
 app.use(aboutRouter);
 app.use(subjectRouter)
 app.use(mainRouter)
-
+app.use(messageRouter)
 // 后端页面请求接口时错误的显示
 app.use(function(req, res, next) {
   next(createError(404));

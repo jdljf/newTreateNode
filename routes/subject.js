@@ -77,29 +77,44 @@ router.get('/getClassify', (req, res, next) => {
 })
 
 router.get('/getSubjectDetail', (req, res, next) => {
-    // console.log(req.query);
+    console.log(req.query);
     const { index, id } = req.query
-    subjectClassify.findById(id, function (err, subject) {
+
+    video.findById(id, function (err, subject) {
         if (err) {
             return res.status(500).json({
                 err_code: 500,
                 message: '哎呀，出错啦'
             })
         }
-        // console.log(subject)
+        console.log(subject)
         res.status(200).json({
             err_code: 200,
-            detail: subject.detail[index]
+            detail: subject
         })
     })
+
+
+    // subjectClassify.findById(id, function (err, subject) {
+    //     if (err) {
+    //         return res.status(500).json({
+    //             err_code: 500,
+    //             message: '哎呀，出错啦'
+    //         })
+    //     }
+    //     // console.log(subject)
+    //     res.status(200).json({
+    //         err_code: 200,
+    //         detail: subject.detail[index]
+    //     })
+    // })
 })
 
 router.get('/getHandout', (req, res, next) => {
     console.log(req.query);
 
     subjectHandout.findOne(
-        { subjectId: req.query.id },
-        { subjectId: 0 },
+        { videoId: req.query.id },
         function (err, handout) {
             if (err) {
                 return res.status(500).json({
@@ -110,7 +125,7 @@ router.get('/getHandout', (req, res, next) => {
             console.log(handout)
             res.status(200).json({
                 err_code: 200,
-                handout: handout.handout[req.query.index]
+                handout: handout
             })
         })
 })
@@ -215,7 +230,7 @@ router.get('/getSubjectComment', (req, res, next) => {
                     message: '哎呀，出错啦'
                 })
             }
-            // console.log(comment)
+            console.log(comment)
             res.status(200).json({
                 err_code: 200,
                 comment

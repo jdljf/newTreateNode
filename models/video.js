@@ -13,13 +13,14 @@ const videoSchema = mongoose.Schema({
         type: Boolean,
         default: 0
     },
+    publisher: String,
     title: String,
     durationTime: Number,
     watched: {
         type: Number,
         default: 0
     },
-    common: {
+    comment: {
         type: Number,
         default: 0
     },

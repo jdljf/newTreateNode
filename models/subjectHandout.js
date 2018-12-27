@@ -7,12 +7,9 @@ var ObjectId = mongoose.Schema.Types.ObjectId;
 db.on('error', console.error.bind(console, 'connection error'))
 
 const subjectHandoutSchema = mongoose.Schema({
-    subjectId: String,
-    handout: {
-        type: Array,
-        img: String,
-        content: Array,
-    }
+    videoId: String,
+    img: String,
+    content: Array
 })
 
 module.exports = mongoose.model('Subjecthandout', subjectHandoutSchema);

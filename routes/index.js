@@ -188,18 +188,4 @@ router.post('/checkToken', function (req, res, next) {
   // })
 })
 
-// router.get('/getPersonMessage', function(req, res, next) {
-//   User.findOne({name: 'aaa'}, function (err, user) {
-//     console.log(user)
-//     if (err) {
-//       res.status(500).json({
-//         err_code: 500,
-//         message: '哎呀，出错啦'
-//       })
-//     }
-
-//     res.status(200).json(user)
-//   })
-// });
-
 module.exports = router;

@@ -6,8 +6,9 @@ const router = express.Router();
 
 /* GET users listing. */
 router.get('/getPersonMessage', function (req, res, next) {
-
-  User.findOne({ name: 'aaa' }, function (err, user) {
+  console.log('personmessage');
+  
+  User.findOne({ name: 'bbb' }, function (err, user) {
     console.log(user)
     if (err) {
       res.status(500).json({
