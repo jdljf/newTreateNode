@@ -16,6 +16,7 @@ const myMessageSchema = mongoose.Schema({
         createTime: String,
         messageDetail: {
             type: Array,
+            index: {type: Number, index: true},
             detail: String,
             createTime: String
         }

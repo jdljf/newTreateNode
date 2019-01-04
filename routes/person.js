@@ -7,7 +7,7 @@ const router = express.Router();
 /* GET users listing. */
 router.get('/getPersonMessage', function (req, res, next) {
   console.log('personmessage');
-  
+
   User.findOne({ name: 'bbb' }, function (err, user) {
     console.log(user)
     if (err) {
@@ -37,6 +37,114 @@ router.post('/getPersonPhoneNum', function (req, res, next) {
       phoneNumber: user.phoneNumber
     })
   })
+});
+
+router.get('/getChangePerMes', function (req, res, next) {
+  let query = req.query
+  User.findById('5c0a391318246606b48ce96b', function (err, perMes) {
+    if (err) {
+      res.status(500).json({
+        err_code: 500,
+        message: '哎呀，出错啦'
+      })
+    }
+
+    res.status(200).json({
+      err_code: 200,
+      perMes
+    })
+  })
+});
+
+router.post('/verifyIdentity', function (req, res, next) {
+  let { phoneNumber, verificationCode } = req.body
+  console.log(req.body);
+  console.log(req.body.verificationCode);
+  if (!verificationCode || verificationCode.replace(/^\s+|\s+$/g, '').length <= 0) {
+    return res.status(200).json({
+      err_code: 1,
+      message: '请填写验证码'
+    })
+  }
+  if (verificationCode.replace(/^\s+|\s+$/g, '') === '123') {
+    User.findById('5c0a391318246606b48ce96b', function (err, perMes) {
+      if (err) {
+        res.status(500).json({
+          err_code: 500,
+          message: '哎呀，出错啦'
+        })
+      }
+
+      res.status(200).json({
+        err_code: 0,
+        message: '验证码正确'
+      })
+    })
+  }
+  else {
+    res.status(200).json({
+      err_code: 2,
+      message: '验证码错误'
+    })
+  }
+});
+
+router.post('/sureChangePhone', function (req, res, next) {
+  let { newPhoneNumber, verificationCode } = req.body
+  console.log(req.body);
+  console.log(req.body.verificationCode);
+
+  if (!newPhoneNumber || newPhoneNumber.replace(/^\s+|\s+$/g, '').length <= 0) {
+    return res.status(200).json({
+      err_code: 2,
+      message: '请填写手机号'
+    })
+  }
+  if (!verificationCode || verificationCode.replace(/^\s+|\s+$/g, '').length <= 0) {
+    return res.status(200).json({
+      err_code: 1,
+      message: '请填写验证码'
+    })
+  }
+  else if (verificationCode.replace(/^\s+|\s+$/g, '') === '123') {
+
+    User.findByIdAndUpdate('5c0a391318246606b48ce96b', {
+      phoneNumber: newPhoneNumber
+    }, function (err, user) {
+      if (err) {
+        res.status(500).json({
+          err_code: 500,
+          message: '哎呀，出错啦'
+        })
+      }
+      res.status(200).json({
+        err_code: 200,
+        message: '更改成功'
+      })
+    })
+
+    // User.findById('5c0a391318246606b48ce96b', function (err, perMes) {
+    //   if (err) {
+    //     res.status(500).json({
+    //       err_code: 500,
+    //       message: '哎呀，出错啦'
+    //     })
+    //   }
+    //   if (perMes) {
+    //     User.update()
+    //   }
+    //   // res.status(200).json({
+    //   //   err_code: 0,
+    //   //   message: '验证码正确'
+    //   // })
+    // })  
+  }
+  else {
+    res.status(200).json({
+      err_code: 2,
+      message: '验证码错误'
+    })
+  }
 });
 
 router.post('/changePassword', function (req, res, next) {
@@ -76,9 +184,11 @@ router.post('/changePassword', function (req, res, next) {
 /**
  * 管理收货地址接口
  */
-router.post('/getRecAddresses', checkToken, function (req, res, next) {
-  receiveAddress.findById(
-    '5c0c7716a6caac1440278678',
+router.post('/getRecAddresses', checkToken, function (token, req, res, next) {
+  console.log(token);
+
+  receiveAddress.findOne(
+    { personId: token.id },
     function (err, model) {
       if (err) {
         res.status(500).json({
@@ -177,7 +287,7 @@ router.get('/delRecAddresses', function (req, res, next) {
           message: '哎呀，出错啦'
         })
       }
-      console.log('删除成功',model)
+      console.log('删除成功', model)
       receiveAddress.findById('5c0c7716a6caac1440278678', function (err, data) {
         console.log(data)
       })

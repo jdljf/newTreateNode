@@ -43,7 +43,7 @@ const addressSchema = mongoose.Schema({
         type: String,
         require: true
     },
-    idNummber: {
+    personId: {
         type: String,
         require: true
     },

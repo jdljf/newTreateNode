@@ -11,8 +11,9 @@ const couponSchema = mongoose.Schema({
     beginTime: String,
     endTime: String,
     img: String,
-    reaminCount: String,
-    canReceiveCount: String
+    reaminCount: Number,
+    canReceiveCount: Number,
+    detail: Array
 })
 
 module.exports = mongoose.model('Coupon', couponSchema);

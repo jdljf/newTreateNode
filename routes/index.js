@@ -3,6 +3,7 @@ const User = require('../models/users')
 const person = require('./person')
 const jwt = require('jsonwebtoken')
 const checkToken = require('../token/checkToken')
+const md5 = require('blueimp-md5')
 const router = express.Router()
 
 // let jsonParser = bodyParser.json();
@@ -65,7 +66,7 @@ router.get('/', function (req, res, next) {
 //   if (req.get('Authentication-Token')) {
 //     let token = req.get('Authentication-Token');
 //     console.log(token);
-    
+
 //   //   //解码token
 //     let decoded = jwt.decode(token, 'liaojunfeng');
 //     // console.log(decoded);//的输出 ：{ user_id: '123123123', iat: 1494405235, exp: 1494405235 }
@@ -95,32 +96,44 @@ router.get('/first', checkToken, function (req, res, next) {
 
 
 router.post('/register', function (req, res, next) {
-  console.log(req.body)
-  let body = req.body.person
-  let verification = req.body.verificationCode
-  console.log(body)
-
+  let { person, verification, agree } = req.body
+  console.log(person)
   // User.findOne(, function (err, user) {
   //   if (err) {
   //     return next(err)
   //   }
   // })
-
-  new User(body).save(function (err, user, next) {
+  User.findOne({
+    $or: [
+      {
+        phoneNumber: person.phoneNumber
+      },
+      {
+        idNumber: person.idNumber
+      }
+    ]
+  }, function (err, hadUser) {
     if (err) {
-      return console.log('出错啦')
+      return res.status(500).json({
+        err_code: 500,
+        message: '服务端出错啦'
+      })
     }
-    res.status(200).json({
-      err_code: 0,
-      message: 'OK'
+    if (hadUser) {
+      return res.status(200).json({
+        err_code: 1,
+        message: '用户已存在'
     })
+    }
   })
 })
 
 router.post('/login', function (req, res, next) {
   let body = req.body
+  console.log(req.query);
+
   User.findOne({
-    name: body.name,
+    phoneNumber: body.phoneNumber,
     password: body.password
   }, function (err, user) {
     if (err) {
@@ -129,7 +142,7 @@ router.post('/login', function (req, res, next) {
         message: '哎呀，出错啦'
       })
     }
-    console.log(user._id)
+    console.log(user)
     if (!user) {
       return res.status(200).json({
         err_code: 1,
