@@ -96,36 +96,119 @@ router.get('/first', checkToken, function (req, res, next) {
 
 
 router.post('/register', function (req, res, next) {
-  let { person, verification, agree } = req.body
-  console.log(person)
-  // User.findOne(, function (err, user) {
-  //   if (err) {
-  //     return next(err)
-  //   }
-  // })
-  User.findOne({
-    $or: [
-      {
-        phoneNumber: person.phoneNumber
-      },
-      {
-        idNumber: person.idNumber
-      }
-    ]
-  }, function (err, hadUser) {
-    if (err) {
-      return res.status(500).json({
-        err_code: 500,
-        message: '服务端出错啦'
+  let body = req.body
+  let { person, verificationCode, agree } = body
+  console.log(body)
+
+  if (!agree) {
+    return res.status(200).json({
+      err_code: 1001,
+      message: '请同意条款'
+    })
+  }
+  if (!verificationCode || verificationCode.trim().length <= 0) {
+    return res.status(200).json({
+      err_code: 1002,
+      message: '请输入验证码'
+    })
+  }
+  else if (verificationCode !== '123') {
+    return res.status(200).json({
+      err_code: 1003,
+      message: '请输入正确的验证码'
+    })
+  }
+  else if (verificationCode == '123') {
+    if (!person.phoneNumber || person.phoneNumber.trim().length <= 0) {
+      return res.status(200).json({
+        err_code: 1010,
+        message: '请输入电话号码'
       })
     }
-    if (hadUser) {
+    else if (!(/^1[34578]\d{9}$/.test(person.phoneNumber))) {
       return res.status(200).json({
-        err_code: 1,
-        message: '用户已存在'
-    })
+        err_code: 1011,
+        message: '请输入正确的电话号码'
+      })
     }
-  })
+    if (!person.name || person.name.trim().length <= 0) {
+      return res.status(200).json({
+        err_code: 1012,
+        message: '请输入真实姓名'
+      })
+    }
+    if (!person.idNumber || person.idNumber.trim().length <= 0) {
+      return res.status(200).json({
+        err_code: 1013,
+        message: '请输入身份证号码'
+      })
+    }
+    else if (!(/(^\d{15}$)|(^\d{17}([0-9]|X)$)/.test(person.idNumber))) {
+      return res.status(200).json({
+        err_code: 1014,
+        message: '请输入正确的身份证号码'
+      })
+    }
+    if (!person.province || person.province.trim().length <= 0) {
+      return res.status(200).json({
+        err_code: 1015,
+        message: '请选择省'
+      })
+    }
+    if (!person.area || person.area.trim().length <= 0) {
+      return res.status(200).json({
+        err_code: 1016,
+        message: '请选择市'
+      })
+    }
+    if (!person.city || person.city.trim().length <= 0) {
+      return res.status(200).json({
+        err_code: 1017,
+        message: '请选择区'
+      })
+    }
+    if (!person.address || person.address.trim().length <= 0) {
+      return res.status(200).json({
+        err_code: 1018,
+        message: '请输入详细地址'
+      })
+    }
+    User.findOne({
+      $or: [
+        {
+          phoneNumber: person.phoneNumber
+        },
+        {
+          idNumber: person.idNumber
+        }
+      ]
+    }, function (err, hadUser) {
+      if (err) {
+        return res.status(500).json({
+          err_code: 500,
+          message: '服务端出错啦'
+        })
+      }
+      if (hadUser) {
+        return res.status(200).json({
+          err_code: 1,
+          message: '用户已存在'
+        })
+      }
+      new User(body).save(function (err, user, next) {
+        if (err) {
+          return res.status(500).json({
+            err_code: 500,
+            message: '服务端出错啦'
+          })
+        }
+        res.status(200).json({
+          err_code: 0,
+          message: '注册成功'
+        })
+      })
+    })
+  }
 })
 
 router.post('/login', function (req, res, next) {
