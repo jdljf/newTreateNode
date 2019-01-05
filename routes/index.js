@@ -1,6 +1,7 @@
 const express = require('express')
 const User = require('../models/users')
 const person = require('./person')
+const myMessage = require('../models/myMessage')
 const jwt = require('jsonwebtoken')
 const checkToken = require('../token/checkToken')
 const md5 = require('blueimp-md5')
@@ -42,16 +43,6 @@ const router = express.Router()
 //     }
 //   }
 // }
-
-
-
-// module.exports = function getToken() {
-//   var token = jwt.sign({
-//     // 过期时间一个小时
-//     data: 'footbar'
-//   }, 'shhhhh', { expiresIn: '1h' })
-// }
-
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -195,13 +186,34 @@ router.post('/register', function (req, res, next) {
           message: '用户已存在'
         })
       }
-      new User(body).save(function (err, user, next) {
+      new User(person).save(function (err, user, next) {
         if (err) {
           return res.status(500).json({
             err_code: 500,
             message: '服务端出错啦'
           })
         }
+        console.log(user);
+        let count = 0
+        new myMessage({
+          personId: user._id,
+          message: [
+            {
+              "index": 0,
+              "watched": false,
+              "messageType": 0,
+              "summary": "欢迎使用新E疗",
+              "title": "尊敬的用户：您好！",
+              "detail": ["我是内容"],
+              "create_Time": user.created_time,
+              "messageDetail": []
+            }
+          ]
+        }).save(function (err, myMessage, next) {
+          
+        })
+
+        
         res.status(200).json({
           err_code: 0,
           message: '注册成功'
@@ -213,7 +225,7 @@ router.post('/register', function (req, res, next) {
 
 router.post('/login', function (req, res, next) {
   let body = req.body
-  console.log(req.query);
+  console.log(req.body);
 
   User.findOne({
     phoneNumber: body.phoneNumber,
@@ -252,36 +264,36 @@ router.post('/login', function (req, res, next) {
   })
 })
 
-router.post('/checkToken', function (req, res, next) {
-  let token = req.get('Authorization')
-  if (ctx.request.header['authorization']) {
-    let token = ctx.request.header['authorization'].split(' ')[1];
-    //解码token
-    let decoded = jwt.decode(token, 'liaojunfeng');
-    //console.log(decoded);的输出 ：{ user_id: '123123123', iat: 1494405235, exp: 1494405235 }
-    if (token && decoded.exp <= new Date() / 1000) {
-      res.status(401).json({
-        err_code: 10000,
-        message: '哎呀，token过期'
-      })
-    } else {
-      //如果权限没问题，那么交个下一个控制器处理
-      return next();
-    }
-  } else {
-    res.status(401).json({
-      err_code: 10001,
-      message: '没有token'
-    })
-  }
-  // jwt.verify(token, 'liaojunfeng', (err, decode) => {
-  //   if (err) {
-  //     console.log('token不对')
-  //   }
-  //   else {
-  //     console.log('token存在')
-  //   }
-  // })
-})
+// router.post('/checkToken', function (req, res, next) {
+//   let token = req.get('Authorization')
+//   if (ctx.request.header['authorization']) {
+//     let token = ctx.request.header['authorization'].split(' ')[1];
+//     //解码token
+//     let decoded = jwt.decode(token, 'liaojunfeng');
+//     //console.log(decoded);的输出 ：{ user_id: '123123123', iat: 1494405235, exp: 1494405235 }
+//     if (token && decoded.exp <= new Date() / 1000) {
+//       res.status(401).json({
+//         err_code: 10000,
+//         message: '哎呀，token过期'
+//       })
+//     } else {
+//       //如果权限没问题，那么交个下一个控制器处理
+//       return next();
+//     }
+//   } else {
+//     res.status(401).json({
+//       err_code: 10001,
+//       message: '没有token'
+//     })
+//   }
+//   // jwt.verify(token, 'liaojunfeng', (err, decode) => {
+//   //   if (err) {
+//   //     console.log('token不对')
+//   //   }
+//   //   else {
+//   //     console.log('token存在')
+//   //   }
+//   // })
+// })
 
 module.exports = router;

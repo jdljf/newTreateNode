@@ -7,7 +7,7 @@ const router = express.Router()
 router.get('/getMyMessage', checkToken, (token, req, res, next) => {
     console.log(token);
 
-    if (token || token._id !== "") {
+    if (token || token.id !== "") {
         console.log(token.id);
 
         myMessage.findOne({ personId: token.id }, function (err, message) {

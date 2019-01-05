@@ -5,10 +5,10 @@ const receiveAddress = require('../models/receiveAddress')
 const router = express.Router();
 
 /* GET users listing. */
-router.get('/getPersonMessage', function (req, res, next) {
+router.get('/getPersonMessage', checkToken, function (token, req, res, next) {
   console.log('personmessage');
-
-  User.findOne({ name: 'bbb' }, function (err, user) {
+    
+  User.findOne({"_id": token.id}, function (err, user) {
     console.log(user)
     if (err) {
       res.status(500).json({
@@ -39,9 +39,9 @@ router.post('/getPersonPhoneNum', function (req, res, next) {
   })
 });
 
-router.get('/getChangePerMes', function (req, res, next) {
+router.get('/getChangePerMes', checkToken, function (token, req, res, next) {
   let query = req.query
-  User.findById('5c0a391318246606b48ce96b', function (err, perMes) {
+  User.findById(token.id, function (err, perMes) {
     if (err) {
       res.status(500).json({
         err_code: 500,
@@ -89,26 +89,32 @@ router.post('/verifyIdentity', function (req, res, next) {
   }
 });
 
-router.post('/sureChangePhone', function (req, res, next) {
+router.post('/sureChangePhone', checkToken, function (token, req, res, next) {
   let { newPhoneNumber, verificationCode } = req.body
   console.log(req.body);
   console.log(req.body.verificationCode);
 
   if (!newPhoneNumber || newPhoneNumber.replace(/^\s+|\s+$/g, '').length <= 0) {
     return res.status(200).json({
-      err_code: 2,
+      err_code: 1010,
       message: '请填写手机号'
+    })
+  }
+  else if (!(/^1[34578]\d{9}$/.test(newPhoneNumber))) {
+    return res.status(200).json({
+      err_code: 1011,
+      message: '请输入正确的电话号码'
     })
   }
   if (!verificationCode || verificationCode.replace(/^\s+|\s+$/g, '').length <= 0) {
     return res.status(200).json({
-      err_code: 1,
+      err_code: 1012,
       message: '请填写验证码'
     })
   }
   else if (verificationCode.replace(/^\s+|\s+$/g, '') === '123') {
 
-    User.findByIdAndUpdate('5c0a391318246606b48ce96b', {
+    User.findByIdAndUpdate(token.id, {
       phoneNumber: newPhoneNumber
     }, function (err, user) {
       if (err) {
@@ -122,22 +128,6 @@ router.post('/sureChangePhone', function (req, res, next) {
         message: '更改成功'
       })
     })
-
-    // User.findById('5c0a391318246606b48ce96b', function (err, perMes) {
-    //   if (err) {
-    //     res.status(500).json({
-    //       err_code: 500,
-    //       message: '哎呀，出错啦'
-    //     })
-    //   }
-    //   if (perMes) {
-    //     User.update()
-    //   }
-    //   // res.status(200).json({
-    //   //   err_code: 0,
-    //   //   message: '验证码正确'
-    //   // })
-    // })  
   }
   else {
     res.status(200).json({

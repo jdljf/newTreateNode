@@ -9,7 +9,7 @@ router.get('/getUserApply', checkToken, (token, req, res, next) => {
     console.log(token);
     let coupons = []
     personCoupon.findOne({
-        personId: '5c0a391318246606b48ce96b'
+        personId: token.id
     })
         .exec()
         .then((doc) => {

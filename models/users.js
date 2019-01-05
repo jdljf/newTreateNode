@@ -56,6 +56,18 @@ const userSchema = {
     medicalBeans: {
         type: Number,
         default: 0
+    },
+    created_time: {
+        type: Date,
+        // 注意：这里不要写 Date.now() 因为会即刻调用
+        // 这里直接给了一个方法：Date.now
+        // 当你去 new Model的时候，如果你没有传递 create_time，
+        // 则mongoose 就会调用 default 指定的 Data.now 方法，使用其返回值作为默认值
+        default: Date.now
+    },
+    last_modified_time: {
+        type: Date,
+        default: Date.now
     }
 }
 
