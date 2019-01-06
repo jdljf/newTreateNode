@@ -245,22 +245,22 @@ router.post('/changeForgetPassword', checkToken, function (token, req, res, next
         User.findOneAndUpdate({
           phoneNumber: phoneNumber
         }, {
-          password: newPassword
-        }, function (err, user) {
-          if (err) {
-            return res.status(500).json({
-              err_code: 500,
-              message: '服务器出错啦'
-            })
-          }
+            password: newPassword
+          }, function (err, user) {
+            if (err) {
+              return res.status(500).json({
+                err_code: 500,
+                message: '服务器出错啦'
+              })
+            }
 
-          if (!user) {
-            return res.status(200).json({
-              err_code: 200,
-              message: '修改成功'
-            })  
-          }
-        })
+            if (!user) {
+              return res.status(200).json({
+                err_code: 200,
+                message: '修改成功'
+              })
+            }
+          })
       }
     })
   }
@@ -287,12 +287,67 @@ router.post('/getRecAddresses', checkToken, function (token, req, res, next) {
           message: '哎呀，出错啦'
         })
       }
-      console.log(model)
+      // console.log(model)
+      if (!model || model.receiveAddresses.length <= 0) {
+        return res.status(200).json({
+          err_code: 1000,
+          address: []
+        })
+      }
       res.status(200).json({
         err_code: 200,
         address: model.receiveAddresses
       })
     })
+});
+
+router.post('/saveReceiveAddress', checkToken, function (token, req, res, next) {
+  console.log(token);
+  console.log(req.body);
+
+  receiveAddress.findOne({
+    personId: token.id
+  }, function (err, person) {
+    console.log(person);
+    if (!person) {
+      new receiveAddress({
+        personId: token.id,
+        receiveAddresses: [req.body]
+      }).save(function (err, receiveAddress) {
+        if (err) {
+          res.status(500).json({
+            err_code: 500,
+            message: '哎呀，出错啦'
+          })
+        }
+        // console.log(model)
+        if (receiveAddress) {
+          return res.status(200).json({
+            err_code: 200,
+            message: '保存成功'
+          })
+        }
+      })
+    }
+    else if (person) {
+      receiveAddress.findOneAndUpdate({
+        personId: token.id
+      }, {
+        $push: {
+          receiveAddresses: req.body
+        }
+      }, {
+        'upsert': true
+      },function (err, result) {
+        if (result) {
+          return res.status(200).json({
+            err_code: 200,
+            message: '保存成功'
+          })
+        }
+      })
+    }
+  })
 });
 
 /**
