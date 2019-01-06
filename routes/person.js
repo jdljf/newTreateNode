@@ -7,8 +7,8 @@ const router = express.Router();
 /* GET users listing. */
 router.get('/getPersonMessage', checkToken, function (token, req, res, next) {
   console.log('personmessage');
-    
-  User.findOne({"_id": token.id}, function (err, user) {
+
+  User.findOne({ "_id": token.id }, function (err, user) {
     console.log(user)
     if (err) {
       res.status(500).json({
@@ -21,17 +21,18 @@ router.get('/getPersonMessage', checkToken, function (token, req, res, next) {
   })
 });
 
-router.post('/getPersonPhoneNum', function (req, res, next) {
-  let body = req.body
-  User.findOne(body, function (err, user) {
+router.get('/getPersonPhoneNum', checkToken, function (token, req, res, next) {
+  console.log(token);
+
+  User.findById(token.id, function (err, user) {
     if (err) {
-      res.status(500).json({
+      return res.status(500).json({
         err_code: 500,
         message: '哎呀，出错啦'
       })
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       err_code: 200,
       id: user._id,
       phoneNumber: user.phoneNumber
@@ -43,13 +44,13 @@ router.get('/getChangePerMes', checkToken, function (token, req, res, next) {
   let query = req.query
   User.findById(token.id, function (err, perMes) {
     if (err) {
-      res.status(500).json({
+      return res.status(500).json({
         err_code: 500,
         message: '哎呀，出错啦'
       })
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       err_code: 200,
       perMes
     })
@@ -82,7 +83,7 @@ router.post('/verifyIdentity', function (req, res, next) {
     })
   }
   else {
-    res.status(200).json({
+    return res.status(200).json({
       err_code: 2,
       message: '验证码错误'
     })
@@ -118,57 +119,157 @@ router.post('/sureChangePhone', checkToken, function (token, req, res, next) {
       phoneNumber: newPhoneNumber
     }, function (err, user) {
       if (err) {
-        res.status(500).json({
+        return res.status(500).json({
           err_code: 500,
           message: '哎呀，出错啦'
         })
       }
-      res.status(200).json({
+      return res.status(200).json({
         err_code: 200,
         message: '更改成功'
       })
     })
   }
   else {
-    res.status(200).json({
+    return res.status(200).json({
       err_code: 2,
       message: '验证码错误'
     })
   }
 });
 
-router.post('/changePassword', function (req, res, next) {
-  let body = req.body
-  User.findByIdAndUpdate('5c0a391318246606b48ce96b', {
-    passsword: body.o
-  }, function (err, user) {
-    if (err) {
-      res.status(500).json({
-        err_code: 500,
-        message: '哎呀，出错啦'
+router.post('/changePassword', checkToken, function (token, req, res, next) {
+  let { phoneNumber, oldPassword, newPassword, repeatPassword } = req.body
+  console.log(req.body);
+  if (!oldPassword || oldPassword.replace(/^\s+|\s+$/g, '').length <= 0) {
+    return res.status(200).json({
+      err_code: 1010,
+      message: '请输入旧密码'
+    })
+  }
+  if (!newPassword || newPassword.replace(/^\s+|\s+$/g, '').length <= 0) {
+    return res.status(200).json({
+      err_code: 1011,
+      message: '请输入新密码'
+    })
+  }
+  if (!repeatPassword || repeatPassword.replace(/^\s+|\s+$/g, '').length <= 0) {
+    return res.status(200).json({
+      err_code: 1012,
+      message: '请再次输入密码'
+    })
+  }
+  if (newPassword !== repeatPassword) {
+    return res.status(200).json({
+      err_code: 1013,
+      message: '两次输入密码不一致'
+    })
+  }
+  User.findById(token.id, function (err, user) {
+    if (oldPassword === user.password) {
+      User.findOneAndUpdate({ '_id': token.id }, {
+        password: newPassword
+      }, function (err, user) {
+        if (err) {
+          return res.status(500).json({
+            err_code: 500,
+            message: '服务器出错啦'
+          })
+        }
+        console.log(user);
+
+        return res.status(200).json({
+          err_code: 200,
+          message: '修改成功'
+        })
+      })
+    }
+    else {
+      return res.status(200).json({
+        err_code: 1014,
+        message: '旧密码错误'
+      })
+    }
+  })
+});
+
+router.post('/changeForgetPassword', checkToken, function (token, req, res, next) {
+  let { phoneNumber, newPassword, repeatPassword, verificationCode } = req.body
+  console.log(req.body);
+  if (!phoneNumber || phoneNumber.trim().length <= 0) {
+    return res.status(200).json({
+      err_code: 1010,
+      message: '请输入电话号码'
+    })
+  }
+  else if (!(/^1[34578]\d{9}$/.test(phoneNumber))) {
+    return res.status(200).json({
+      err_code: 1011,
+      message: '请输入正确的电话号码'
+    })
+  }
+  if (!verificationCode || verificationCode.replace(/^\s+|\s+$/g, '').length <= 0) {
+    return res.status(200).json({
+      err_code: 1,
+      message: '请填写验证码'
+    })
+  }
+  if (verificationCode.replace(/^\s+|\s+$/g, '') === '123') {
+    if (!newPassword || newPassword.replace(/^\s+|\s+$/g, '').length <= 0) {
+      return res.status(200).json({
+        err_code: 1011,
+        message: '请输入新密码'
+      })
+    }
+    if (!repeatPassword || repeatPassword.replace(/^\s+|\s+$/g, '').length <= 0) {
+      return res.status(200).json({
+        err_code: 1012,
+        message: '请再次输入密码'
+      })
+    }
+    if (newPassword !== repeatPassword) {
+      return res.status(200).json({
+        err_code: 1013,
+        message: '两次输入密码不一致'
       })
     }
 
-    res.status(200).json({
-      err_code: 200,
-      message: '更新成功'
-    })
-  })
-  User.findByIdAndUpdate('5c0a391318246606b48ce96b', {
-    passsword: body.newPassword
-  }, function (err, user) {
-    if (err) {
-      res.status(500).json({
-        err_code: 500,
-        message: '哎呀，出错啦'
-      })
-    }
+    User.findOne({ phoneNumber: phoneNumber }, function (err, user) {
+      if (err) {
+        return res.status(500).json({
+          err_code: 500,
+          message: '服务器出错啦'
+        })
+      }
+      if (!user) {
+        User.findOneAndUpdate({
+          phoneNumber: phoneNumber
+        }, {
+          password: newPassword
+        }, function (err, user) {
+          if (err) {
+            return res.status(500).json({
+              err_code: 500,
+              message: '服务器出错啦'
+            })
+          }
 
-    res.status(200).json({
-      err_code: 200,
-      message: '更新成功'
+          if (!user) {
+            return res.status(200).json({
+              err_code: 200,
+              message: '修改成功'
+            })  
+          }
+        })
+      }
     })
-  })
+  }
+  else {
+    return res.status(200).json({
+      err_code: 2,
+      message: '验证码错误'
+    })
+  }
 });
 
 /**
