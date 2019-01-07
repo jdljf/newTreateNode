@@ -302,9 +302,8 @@ router.post('/getRecAddresses', checkToken, function (token, req, res, next) {
 });
 
 router.post('/saveReceiveAddress', checkToken, function (token, req, res, next) {
-  console.log(token);
   console.log(req.body);
-
+  let { addressId } = req.body
   receiveAddress.findOne({
     personId: token.id
   }, function (err, person) {
@@ -323,29 +322,165 @@ router.post('/saveReceiveAddress', checkToken, function (token, req, res, next) 
         // console.log(model)
         if (receiveAddress) {
           return res.status(200).json({
-            err_code: 200,
-            message: '保存成功'
+            err_code: 2000,
+            message: '添加成功'
           })
         }
       })
     }
-    else if (person) {
-      receiveAddress.findOneAndUpdate({
-        personId: token.id
-      }, {
-        $push: {
-          receiveAddresses: req.body
-        }
-      }, {
-        'upsert': true
-      },function (err, result) {
-        if (result) {
-          return res.status(200).json({
-            err_code: 200,
-            message: '保存成功'
+    else if (person && (addressId && addressId.length > 0)) {
+      if (req.body.isDefault === true) {
+        receiveAddress.findOneAndUpdate({
+          personId: token.id,
+          'receiveAddresses.isDefault': true
+        }, {
+            $set: {
+              'receiveAddresses.$.isDefault': false
+            }
+          }, function (err, result) {
+            if (err) {
+              return res.status(500).json({
+                err_code: 500,
+                message: '服务器出错啦'
+              })
+            }
+            receiveAddress.findOneAndUpdate({
+              personId: token.id,
+              'receiveAddresses._id': req.body.addressId
+            }, {
+                $set: {
+                  'receiveAddresses.$': {
+                    receiveName: req.body.receiveName,
+                    receivePhone: req.body.receivePhone,
+                    province: req.body.province,
+                    area: req.body.area,
+                    city: req.body.city,
+                    receiveAddress: req.body.receiveAddress,
+                    isDefault: req.body.isDefault
+                  }
+                }
+              }, {
+                'upsert': true
+              }, function (err, result) {
+                if (result) {
+                  return res.status(200).json({
+                    err_code: 2001,
+                    message: '添加成功'
+                  })
+                }
+              })
+          }
+        )
+      }
+      else {
+        receiveAddress.findOneAndUpdate({
+          personId: token.id,
+          'receiveAddresses._id': req.body.addressId
+        }, {
+            $set: {
+              'receiveAddresses.$': {
+                receiveName: req.body.receiveName,
+                receivePhone: req.body.receivePhone,
+                province: req.body.province,
+                area: req.body.area,
+                city: req.body.city,
+                receiveAddress: req.body.receiveAddress,
+                isDefault: req.body.isDefault
+              }
+            }
+          }, {
+            'upsert': true
+          }, function (err, result) {
+            if (result) {
+              return res.status(200).json({
+                err_code: 2001,
+                message: '添加成功'
+              })
+            }
           })
-        }
-      })
+      }
+    }
+    else if (person && (!addressId)) {
+      if (req.body.isDefault === true) {
+        receiveAddress.findOneAndUpdate({
+          personId: token.id,
+          'receiveAddresses.isDefault': true
+        }, {
+            $set: {
+              'receiveAddresses.$.isDefault': false
+            }
+          }, function (err, result) {
+            if (err) {
+              return res.status(500).json({
+                err_code: 500,
+                message: '服务器出错啦'
+              })
+            }
+            receiveAddress.findOneAndUpdate({
+              personId: token.id
+            }, {
+                $push: {
+                  receiveAddresses: {
+                    receiveName: req.body.receiveName,
+                    receivePhone: req.body.receivePhone,
+                    province: req.body.province,
+                    area: req.body.area,
+                    city: req.body.city,
+                    receiveAddress: req.body.receiveAddress,
+                    isDefault: req.body.isDefault
+                  }
+                }
+              }, {
+                'upsert': true
+              }, function (err, result) {
+                if (err) {
+                  return res.status(500).json({
+                    err_code: 500,
+                    message: '服务器出错啦'
+                  })
+                }
+                if (result) {
+                  return res.status(200).json({
+                    err_code: 2002,
+                    message: '保存成功'
+                  })
+                }
+              })
+          }
+        )
+      }
+      else {
+        receiveAddress.findOneAndUpdate({
+          personId: token.id
+        }, {
+            $push: {
+              receiveAddresses: {
+                receiveName: req.body.receiveName,
+                receivePhone: req.body.receivePhone,
+                province: req.body.province,
+                area: req.body.area,
+                city: req.body.city,
+                receiveAddress: req.body.receiveAddress,
+                isDefault: req.body.isDefault
+              }
+            }
+          }, {
+            'upsert': true
+          }, function (err, result) {
+            if (err) {
+              return res.status(500).json({
+                err_code: 500,
+                message: '服务器出错啦'
+              })
+            }
+            if (result) {
+              return res.status(200).json({
+                err_code: 2002,
+                message: '保存成功'
+              })
+            }
+          })
+      }
     }
   })
 });
@@ -353,78 +488,96 @@ router.post('/saveReceiveAddress', checkToken, function (token, req, res, next) 
 /**
  * 跳转地址修改页面请求的接口
  */
-router.get('/getReceiveAddress', function (req, res, next) {
+router.get('/getReceiveAddress', checkToken, function (token, req, res, next) {
   // let query = req.params.personId
+  let addressId = req.query.addressId
+  console.log(addressId);
 
-  // console.log(req)
-  let query = '5c0c7716a6caac1440278678'
-  receiveAddress.findById(
-    query,
-    function (err, model) {
-      if (err) {
-        res.status(500).json({
-          err_code: 500,
-          message: '哎呀，出错啦'
-        })
-      }
-      console.log(model)
-      res.status(200).json({
-        err_code: 200,
-        address: model.receiveAddresses[0]
-      })
+  if (!addressId || addressId.length === "") {
+    return res.status(200).json({
+      err_code: 200,
+      address: {}
     })
+  }
+  else {
+    receiveAddress.findOne(
+      {
+        personId: token.id,
+        'receiveAddresses._id': addressId
+      },
+      {
+        'receiveAddresses.$': true
+      },
+      function (err, result) {
+        if (err) {
+          return res.status(500).json({
+            err_code: 500,
+            message: '服务器出错啦'
+          })
+        }
+        console.log(result)
+        if (result) {
+          res.status(200).json({
+            err_code: 200,
+            address: result.receiveAddresses[0]
+          })
+        }
+
+      })
+  }
 });
 
 /**
  * 编辑收货地址
  */
-router.post('/editReceiveAddress', function (req, res, next) {
-  // let query = req.params.personId
-  let body = req.body
-  console.log(req.body)
-  let query = '5c0c7716a6caac1440278679'
-  receiveAddress.updateOne(
-    { 'receiveAddresses._id': query },
-    {
-      '$set': {
-        'receiveAddresses.$.receiveName': body.receiveName,
-        'receiveAddresses.$.receivePhone': body.receivePhone,
-        'receiveAddresses.$.province': body.province,
-        'receiveAddresses.$.city': body.city,
-        'receiveAddresses.$.area': body.area,
-        'receiveAddresses.$.address': body.address,
-        'receiveAddresses.$.isDefault': body.isDefault
-      }
-    },
-    function (err, model) {
-      if (err) {
-        res.status(500).json({
-          err_code: 500,
-          message: '哎呀，出错啦'
-        })
-      }
-      console.log(model)
-      res.status(200).json({
-        err_code: 200,
-        message: '修改成功'
-      })
-    })
-});
+// router.post('/editReceiveAddress', function (req, res, next) {
+//   // let query = req.params.personId
+//   let body = req.body
+//   console.log(req.body)
+//   let query = '5c0c7716a6caac1440278679'
+//   receiveAddress.updateOne(
+//     { 'receiveAddresses._id': query },
+//     {
+//       '$set': {
+//         'receiveAddresses.$.receiveName': body.receiveName,
+//         'receiveAddresses.$.receivePhone': body.receivePhone,
+//         'receiveAddresses.$.province': body.province,
+//         'receiveAddresses.$.city': body.city,
+//         'receiveAddresses.$.area': body.area,
+//         'receiveAddresses.$.address': body.address,
+//         'receiveAddresses.$.isDefault': body.isDefault
+//       }
+//     },
+//     function (err, model) {
+//       if (err) {
+//         res.status(500).json({
+//           err_code: 500,
+//           message: '哎呀，出错啦'
+//         })
+//       }
+//       console.log(model)
+//       res.status(200).json({
+//         err_code: 200,
+//         message: '修改成功'
+//       })
+//     })
+// });
 
 
 /**
  * 删除收货地址
  */
-router.get('/delRecAddresses', function (req, res, next) {
+router.get('/delRecAddresses', checkToken, function (token, req, res, next) {
   // let body = req.body
-  // console.log(req.body)
-  let query = '5c0c7716a6caac1440278678'
+  let { addressId } = req.query
   let address_id = '5c0c7716a6caac1440278679'
-  receiveAddress.findByIdAndUpdate(
-    // { 'receiveAddresses._id': query },
-    query,
+  receiveAddress.findOneAndUpdate(
     {
-      '$pull': { 'receiveAddresses': { '_id': address_id } }
+      personId: token.id,
+      'receiveAddresses._id': addressId
+    },
+    {
+      '$pull': { 'receiveAddresses': { '_id': addressId } }
     },
     function (err, model) {
       if (err) {
@@ -434,17 +587,57 @@ router.get('/delRecAddresses', function (req, res, next) {
         })
       }
       console.log('删除成功', model)
-      receiveAddress.findById('5c0c7716a6caac1440278678', function (err, data) {
-        console.log(data)
-      })
-      res.status(200).json({
-        err_code: 200,
-        message: '删除成功'
-      })
+      if (model) {
+        res.status(200).json({
+          err_code: 200,
+          message: '删除成功'
+        })
+      }
     })
 });
 
+router.get('/changeDefault', checkToken, function (token, req, res, next) {
+  let { addressId } = req.query
 
+  receiveAddress.findOneAndUpdate({
+    personId: token.id,
+    'receiveAddresses.isDefault': true
+  }, {
+      $set: {
+        'receiveAddresses.$.isDefault': false
+      }
+    }, function (err, result) {
+      if (err) {
+        return res.status(500).json({
+          err_code: 500,
+          message: '服务器出错啦'
+        })
+      }
+
+      receiveAddress.findOneAndUpdate({
+        personId: token.id,
+        'receiveAddresses._id': req.query.addressId
+      }, {
+          $set: {
+            'receiveAddresses.$.isDefault':  true            
+          }
+        }, function (err, result) {
+          if (err) {
+            return res.status(500).json({
+              err_code: 500,
+              message: '服务器出错啦'
+            })
+          }
+          if (result) {
+            return res.status(200).json({
+              err_code: 200,
+              message: '更改成功'
+            })
+          }
+        })
+    }
+  )
+});
 
 // router.get('/getReceiveAddress', function (req, res, next) {
 //   let body = req.query

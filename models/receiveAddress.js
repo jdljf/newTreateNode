@@ -19,7 +19,7 @@ const detailAddress = mongoose.Schema({
         type: String,
         require: true
     },
-    address: {
+    receiveAddress: {
         type: String,
         require: true
     },
