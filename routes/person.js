@@ -365,7 +365,7 @@ router.post('/saveReceiveAddress', checkToken, function (token, req, res, next) 
                 if (result) {
                   return res.status(200).json({
                     err_code: 2001,
-                    message: '添加成功'
+                    message: '更改成功'
                   })
                 }
               })
