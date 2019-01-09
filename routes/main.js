@@ -9,6 +9,18 @@ const router = express.Router()
 
 let limitCount = 20
 
+router.get('/getBanner', (req, res, next) => {
+    console.log('信息流');
+    return res.status(200).send({
+        err_code: 200,
+        banner: [
+            '/images/banner1.jpg',
+            '/images/banner2.jpg',
+            '/images/banner3.jpg'
+        ]
+    })
+})
+
 router.get('/informationFlow', (req, res, next) => {
     console.log('信息流');
     let flow = []
@@ -30,7 +42,7 @@ router.get('/informationFlow', (req, res, next) => {
             return Promise.all(promiese)
         })
         .then((videos) => {
-            console.log(videos);
+            // console.log(videos);
             if (videos.length === flow.length) {
                 res.status(200).json({
                     err_code: 200,
