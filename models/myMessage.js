@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const common = require('../routes/common')
 
 mongoose.connect('mongodb://localhost/newTreate', { useNewUrlParser: true })
 
@@ -7,8 +8,16 @@ const db = mongoose.connection
 const messageDetailSchema = mongoose.Schema({
     detail: String,
     create_Time: {
-        type: Date
+        type: Date,
+        default: common.localDate
+    },
+    update_Time: {
+        type: Date,
+        default: common.localDate
     }
+}, {
+    versionKey: false,
+    timestamps: { createdAt: 'create_Time', updatedAt: 'update_Time' }
 })
 
 const messageSchema = mongoose.Schema({
