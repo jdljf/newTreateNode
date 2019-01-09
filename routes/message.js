@@ -69,19 +69,7 @@ router.get('/getMyMessageDetail', checkToken, (token, req, res, next) => {
 
 router.post('/sureAddComment', checkToken, (token, req, res, next) => {
     console.log(req.body);
-
-    // myMessage.findOneAndUpdate({
-    //     personId: token.id,
-    //     'message._id': req.body.commentId
-    // }, {
-    //     $push: {
-    //         'message.$.detail': req.body.personComment
-    //     }
-    // }, function (err, data) {
-    //     console.log(data);
-
-    // })
-
+    
     myMessage.findOne({
         personId: token.id,
         'message._id': req.body.commentId
