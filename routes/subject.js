@@ -90,7 +90,8 @@ router.get('/getClassify', (req, res, next) => {
 
 router.get('/getSubjectDetail', (req, res, next) => {
     const { index, id } = req.query
-
+    console.log(id);
+    
     video.findById(id, function (err, subject) {
         if (err) {
             return res.status(500).json({
