@@ -6,6 +6,12 @@ const video = require('../models/video')
 const videoNotOfent = require('../models/videoNotOfent')
 const aboutVideo = require('../models/_aboutVideo')
 const personTestAns = require('../models/_personTestAns')
+const medicalHumanity = require('../models/_medicalHumanity')
+const medicalComputer = require('../models/_medicalComputer')
+const westernMedicine = require('../models/_westernMedicine')
+const chineseMedicine = require('../models/_chineseMedicine')
+const publicHealth = require('../models/_publicHealth')
+const clinicalExperiment = require('../models/_clinicalExperiment')
 const jwt = require('jsonwebtoken')
 const checkToken = require('../token/checkToken')
 const router = express.Router()
@@ -13,71 +19,76 @@ const router = express.Router()
 const limitCount = 20
 
 router.get('/getSubject', (req, res, next) => {
-    console.log(req.query.id)
+    // console.log(req.query)
+    // for (let i = 0; i < 7; i++) {
+    //     new clinicalExperiment({
+    //         videoId: '5c22d77b14e8c218542299b7'
+    //     }).save()
+    // }
 
-    personSubject.findOne(
-        { personId: '5c0a391318246606b48ce96b' },
+    let dataName = req.query.dataName
+    let result = [], data
+    if (dataName == 'medicalHumanity') {
+        data = medicalHumanity
+    }
+    else if (dataName == 'medicalComputer') {
+        data = medicalComputer
+    }
+    else if (dataName == 'westernMedicine') {
+        data = westernMedicine
+    }
+    else if (dataName == 'chineseMedicine') {
+        data = chineseMedicine
+    }
+    else if (dataName == 'publicHealth') {
+        data = publicHealth
+    }
+    else if (dataName == 'clinicalExperiment') {
+        data = clinicalExperiment
+    }
+    // console.log(data);
+
+    data.find(
+        {},
+        {},
         {
-            classify: { $elemMatch: { subjectId: req.query.id } },
-            personId: 1,
-            _id: 0
-        },
-        {
-            limit: limitCount
-        },
-        function (err, per) {
-            console.log(per);
+            limit: 15
+        })
+        .exec()
+        .then(classifyVideo => {
+            result = classifyVideo
 
-            subjectClassify.findById(req.query.id, {
-                _id: 0,
-                name: 0
-            },
-                {
-                    limit: limitCount
-                }, function (err, sub) {
-                    if (err) {
-                        return res.status(500).json({
-                            err_code: 500,
-                            message: '哎呀，出错啦'
-                        })
-                    }
-
-                    // console.log(sub)
-                    // console.log(per);
-                    for (let i = 0; i < sub.detail.length; i++) {
-                        sub.detail[i].collect = per.classify[0].subject[i].collect
-                        sub.detail[i].collect = per.classify[0].subject[i].collect
-                        sub.detail[i].learnTime = per.classify[0].subject[i].learnTime
-                        sub.detail[i].totalTime = per.classify[0].subject[i].totalTime
-                        sub.detail[i].proportion = per.classify[0].subject[i].proportion
-                    }
-
-                    res.status(200).json({
-                        err_code: 200,
-                        // classify: classify,
-                        personSubject: sub
-                    })
+            let promises = classifyVideo.map(item => {
+                return video.findById(item.videoId).exec()
+            })
+            return Promise.all(promises)
+        })
+        .then((videos) => {
+            if (videos.length === result.length) {
+                res.status(200).json({
+                    err_code: 200,
+                    videos
                 })
+            }
         })
 })
 
 router.get('/getClassify', (req, res, next) => {
-    subjectClassify.find({}, { name: 1 }, function (err, cli) {
+    subjectClassify.find({}, function (err, classify) {
         if (err) {
             return res.status(500).json({
                 err_code: 500,
-                message: '哎呀，出错啦'
+                message: '服务端出错啦'
             })
         }
         res.status(200).json({
             err_code: 200,
-            classify: cli,
+            classify: classify,
         })
     })
 })
 
 router.get('/getSubjectDetail', (req, res, next) => {
-    console.log(req.query);
     const { index, id } = req.query
 
     video.findById(id, function (err, subject) {
@@ -87,7 +98,6 @@ router.get('/getSubjectDetail', (req, res, next) => {
                 message: '哎呀，出错啦'
             })
         }
-        console.log(subject)
         res.status(200).json({
             err_code: 200,
             detail: subject
@@ -111,7 +121,6 @@ router.get('/getSubjectDetail', (req, res, next) => {
 })
 
 router.get('/getHandout', (req, res, next) => {
-    console.log(req.query);
 
     subjectHandout.findOne(
         { videoId: req.query.id },
@@ -122,8 +131,7 @@ router.get('/getHandout', (req, res, next) => {
                     message: '哎呀，出错啦'
                 })
             }
-            console.log(handout)
-            res.status(200).json({
+            return res.status(200).json({
                 err_code: 200,
                 handout: handout
             })
@@ -131,7 +139,7 @@ router.get('/getHandout', (req, res, next) => {
 })
 
 router.get('/getSubAboutVideo', (req, res, next) => {
-    console.log('sfsfs', req.query.id);
+    // console.log('sfsfs', req.query.id);
     let result = []
     let about = []
     aboutVideo.find(
@@ -139,7 +147,7 @@ router.get('/getSubAboutVideo', (req, res, next) => {
     )
         .exec()
         .then((doc) => {
-            console.log(doc);
+            // console.log(doc);
 
             about = doc
             let promises = doc.map(item => {
@@ -162,7 +170,6 @@ router.get('/getSubAboutVideo', (req, res, next) => {
 
         })
         .then((list) => {
-            console.log(list);
 
             if (list.length == about.length) {
                 res.status(200).json({
@@ -175,7 +182,7 @@ router.get('/getSubAboutVideo', (req, res, next) => {
 })
 
 router.get('/getAboutVideo', (req, res, next) => {
-    console.log(req.query.id);
+    // console.log(req.query.id);
     let result = []
     let about = []
     aboutVideo.find(
@@ -183,7 +190,7 @@ router.get('/getAboutVideo', (req, res, next) => {
     )
         .exec()
         .then((doc) => {
-            console.log(doc);
+            // console.log(doc);
 
             about = doc
             let promises = doc.map(item => {
@@ -236,6 +243,111 @@ router.get('/getSubjectComment', (req, res, next) => {
                 comment
             })
         })
+})
+
+router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
+    // console.log(req.query.id);
+    let { personComment, videoId } = req.body
+    // console.log(token.name);
+
+    videoNotOfent.findOne({
+        videoId: videoId
+    }, function (err, hasVideo) {
+
+        if (err) {
+            return res.status(500).json({
+                err_code: 500,
+                message: '服务器出错啦'
+            })
+        }
+        if (!hasVideo) {
+            new videoNotOfent({
+                videoId: videoId,
+                comment: [{
+                    commentName: '',
+                    content: personComment
+                }]
+            }).save(function (err, result) {
+                if (err) {
+                    return res.status(500).json({
+                        err_code: 500,
+                        message: '服务器出错啦'
+                    })
+                }
+                return res.status(200).json({
+                    err_code: 200,
+                    message: '添加成功'
+                })
+            })
+
+            video.findByIdAndUpdate(videoId, {
+                $inc: {
+                    "comment": 1
+                }
+            }, function (err, result) {
+
+                if (err) {
+                    return res.status(500).json({
+                        err_code: 500,
+                        message: '服务器出错啦'
+                    })
+                }
+            })
+        }
+        if (hasVideo) {
+            videoNotOfent.findOneAndUpdate({
+                videoId: videoId,
+            }, {
+                    '$push': {
+                        comment: {
+                            commentName: token.name,
+                            content: personComment
+                        }
+                    }
+                }, function (err, result) {
+                    if (err) {
+                        return res.status(500).json({
+                            err_code: 500,
+                            message: '服务器出错啦'
+                        })
+                    }
+
+                    video.findByIdAndUpdate(videoId, {
+                        $inc: {
+                            "comment": 1
+                        }
+                    }, function (err, result) {
+        
+                        if (err) {
+                            return res.status(500).json({
+                                err_code: 500,
+                                message: '服务器出错啦'
+                            })
+                        }
+                    })
+                    return res.status(200).json({
+                        err_code: 200,
+                        message: '添加成功'
+                    })
+                })            
+        }
+    })
+    // videoNotOfent.findOne(
+    //     { videoId: id },
+    //     { comment: false },
+    //     function (err, test) {
+    //         if (err) {
+    //             return res.status(500).json({
+    //                 err_code: 500,
+    //                 message: '哎呀，出错啦'
+    //             })
+    //         }
+    //         // console.log(comment)
+    //         res.status(200).json({
+    //             err_code: 200,
+    //             test
+    //         })
+    //     })
 })
 
 router.get('/getTest', (req, res, next) => {

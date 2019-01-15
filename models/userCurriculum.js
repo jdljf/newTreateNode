@@ -13,6 +13,8 @@ const curriculumSchema = mongoose.Schema({
     },
     curriculums: {
         type: Array,
+        img: String,
+        video: String,
         title: String,
         totalTime: String,
         lastLearn: String,

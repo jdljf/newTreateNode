@@ -5,9 +5,12 @@ const receiveAddress = require('../models/receiveAddress')
 const router = express.Router();
 
 /* GET users listing. */
-router.get('/getPersonMessage', checkToken, function (token, req, res, next) {
-  console.log('personmessage');
-
+router.get('/getPersonMessage', function (req, res, next) {
+  // User.findOne({
+  //   "_id": '5c309db612f23c1a98967ce8'
+  // }, function (err, user) {
+  //   res.status(200).json(user)
+  // })
   User.findOne({ "_id": token.id }, function (err, user) {
     console.log(user)
     if (err) {
