@@ -1,16 +1,17 @@
 const mongoose = require('mongoose')
+const common = require('../routes/common')
 
 mongoose.connect('mongodb://localhost/newTreate', { useNewUrlParser: true })
 
-const db = mongoose.connection
-
-// db.on('error', console.error.bind(console, 'connection error'))
-
 const videoSchema = mongoose.Schema({
     img: String,
-    video: String,
+    videoUrl: String,
     isVideo: {
         type: Boolean,
+        default: 0
+    },
+    canStudy: {
+        type: Number,
         default: 0
     },
     publisher: String,
@@ -48,7 +49,14 @@ const videoSchema = mongoose.Schema({
             type: Array,
             require: true,
         }
+    },
+    createTime: {
+        type: Date,
+        default: common.localDate
     }
+}, {
+    versionKey: false,
+    timestamps: {createdAt: 'createTime', updateAt: 'updateTime'}
 })
 
 module.exports = mongoose.model('Video', videoSchema);

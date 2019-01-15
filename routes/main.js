@@ -10,7 +10,6 @@ const router = express.Router()
 let limitCount = 20
 
 router.get('/getBanner', (req, res, next) => {
-    console.log('信息流');
     return res.status(200).send({
         err_code: 200,
         banner: [
@@ -22,7 +21,6 @@ router.get('/getBanner', (req, res, next) => {
 })
 
 router.get('/informationFlow', (req, res, next) => {
-    console.log('信息流');
     let flow = []
 
     _flowVideo.find({ flowId: '5c22d9ff8ca8c00e04c06407' }, {
@@ -33,7 +31,6 @@ router.get('/informationFlow', (req, res, next) => {
         })
         .exec()
         .then((flowVideo) => {
-            console.log(flowVideo);
 
             flow = flowVideo
             let promiese = flowVideo.map((item) => {

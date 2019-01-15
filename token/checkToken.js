@@ -15,7 +15,7 @@ module.exports = function (req, res, next) {
       if (token && decoded.exp <= new Date() / 1000) {
         res.status(401).json({
           err_code: 10000,
-          message: '哎呀，token过期'
+          message: 'token过期'
         })
       } else {
         //如果权限没问题，那么交个下一个控制器处理
