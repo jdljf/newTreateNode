@@ -246,8 +246,9 @@ router.post('/login', function (req, res, next) {
     }
     else if (user) {
       let token = jwt.sign({
-        name: body.name,
-        id: user._id
+        name: user.name,
+        id: user._id,
+        idNumber: user.idNumber
       },
         'liaojunfeng',
         { expiresIn: '1h' }

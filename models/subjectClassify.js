@@ -6,8 +6,10 @@ const db = mongoose.connection
 
 db.on('error', console.error.bind(console, 'connection error'))
 
-const subjectClassifyShema = mongoose.Schema({
+const subjectClassifyShema = mongoose.Schema({    
     name: String,
+    dataName: String,
+    img: String,
     detail: {
         type: Array,
         describe: Number,
