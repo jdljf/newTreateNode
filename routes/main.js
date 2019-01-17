@@ -23,30 +23,30 @@ router.get('/getBanner', (req, res, next) => {
 router.get('/informationFlow', (req, res, next) => {
     let flow = []
 
-    _flowVideo.find({ flowId: '5c22d9ff8ca8c00e04c06407' }, {
-        _id: false,
-        __v: false
-    }, {
-            limit: limitCount
-        })
-        .exec()
-        .then((flowVideo) => {
+    // _flowVideo.find({ flowId: '5c22d9ff8ca8c00e04c06407' }, {
+    //     _id: false,
+    //     __v: false
+    // }, {
+    //         limit: limitCount
+    //     })
+    //     .exec()
+    //     .then((flowVideo) => {
 
-            flow = flowVideo
-            let promiese = flowVideo.map((item) => {
-                return video.findById(item.videoId).exec()
-            })
-            return Promise.all(promiese)
-        })
-        .then((videos) => {
-            // console.log(videos);
-            if (videos.length === flow.length) {
-                res.status(200).json({
-                    err_code: 200,
-                    videos
-                })
-            }
-        })
+    //         flow = flowVideo
+    //         let promiese = flowVideo.map((item) => {
+    //             return video.findById(item.videoId).exec()
+    //         })
+    //         return Promise.all(promiese)
+    //     })
+    //     .then((videos) => {
+    //         // console.log(videos);
+    //         if (videos.length === flow.length) {
+    //             res.status(200).json({
+    //                 err_code: 200,
+    //                 videos
+    //             })
+    //         }
+    //     })
 })
 
 router.get('/getFlowClassify', (req, res, next) => {

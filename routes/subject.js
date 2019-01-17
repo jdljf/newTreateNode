@@ -19,7 +19,7 @@ const router = express.Router()
 const limitCount = 20
 
 router.get('/getSubject', (req, res, next) => {
-    console.log(req.query)
+    // console.log(req.query)
     // for (let i = 0; i < 20; i++) {
     //     new medicalHumanity({
     //         videoId: '5c22d77b14e8c218542299b7'
@@ -31,7 +31,9 @@ router.get('/getSubject', (req, res, next) => {
     pageSize = parseInt(pageSize) > 0 ? parseInt(pageSize) : 8;
 
     let skip = (pageNum - 1) * pageSize
+    console.log(dataName);
     console.log(skip);
+    
 
     let result = [], data
     if (dataName == 'medicalHumanity') {
@@ -60,6 +62,7 @@ router.get('/getSubject', (req, res, next) => {
         .exec()
         .then(classifyVideo => {
             result = classifyVideo
+            // console.log(classifyVideo)
 
             let promises = classifyVideo.map(item => {
                 return video.findById(item.videoId).exec()
