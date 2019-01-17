@@ -19,14 +19,20 @@ const router = express.Router()
 const limitCount = 20
 
 router.get('/getSubject', (req, res, next) => {
-    // console.log(req.query)
-    // for (let i = 0; i < 7; i++) {
-    //     new clinicalExperiment({
+    console.log(req.query)
+    // for (let i = 0; i < 20; i++) {
+    //     new medicalHumanity({
     //         videoId: '5c22d77b14e8c218542299b7'
     //     }).save()
     // }
 
-    let dataName = req.query.dataName
+    let { dataName, pageNum, pageSize } = req.query
+    pageNum = parseInt(pageNum) > 0 ? parseInt(pageNum) : 1;
+    pageSize = parseInt(pageSize) > 0 ? parseInt(pageSize) : 8;
+
+    let skip = (pageNum - 1) * pageSize
+    console.log(skip);
+
     let result = [], data
     if (dataName == 'medicalHumanity') {
         data = medicalHumanity
@@ -48,12 +54,9 @@ router.get('/getSubject', (req, res, next) => {
     }
     // console.log(data);
 
-    data.find(
-        {},
-        {},
-        {
-            limit: 15
-        })
+    data.find()
+        .limit(pageSize)
+        .skip(skip)
         .exec()
         .then(classifyVideo => {
             result = classifyVideo
@@ -70,7 +73,16 @@ router.get('/getSubject', (req, res, next) => {
                     videos
                 })
             }
+        }, (err) => {
+            return res.status(500).json({
+                err_code: 500,
+                message: '服务端出错啦'
+            })
         })
+    // res.status(200).json({
+    //                     err_code: 200,
+    //                     videos: []
+    //                 })
 })
 
 router.get('/getClassify', (req, res, next) => {
@@ -91,7 +103,7 @@ router.get('/getClassify', (req, res, next) => {
 router.get('/getSubjectDetail', (req, res, next) => {
     const { index, id } = req.query
     console.log(id);
-    
+
     video.findById(id, function (err, subject) {
         if (err) {
             return res.status(500).json({
@@ -318,7 +330,7 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
                             "comment": 1
                         }
                     }, function (err, result) {
-        
+
                         if (err) {
                             return res.status(500).json({
                                 err_code: 500,
@@ -330,7 +342,7 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
                         err_code: 200,
                         message: '添加成功'
                     })
-                })            
+                })
         }
     })
     // videoNotOfent.findOne(
