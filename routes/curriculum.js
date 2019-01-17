@@ -1,5 +1,5 @@
 const express = require('express')
-const curriculum = require('../models/userCurriculum')
+const userCurriculum = require('../models/userCurriculum')
 const curriculumVideo = require('../models/_curriculumVideo')
 const headlineVideo = require('../models/_headlineVideo')
 const video = require('../models/video')
@@ -8,40 +8,64 @@ const checkToken = require('../token/checkToken')
 const router = express.Router()
 
 router.get('/getUserCurriculum', checkToken, (token, req, res, next) => {
+    console.log('pppp');
 
-    // new curriculum({
-    //     person: '5c309db612f23c1a98967ce8',
-    //     curriculums: {
-    //         title: '我是很长的标题我是很长的标题我是很长的标题我是很长的标题我是很长的标题我是很长的标题我是很长的标题我是很长的标题',
-    //         totalTime: '200',
-    //         lastLearn: '2018-12-12 12:22',
-    //         picture: '22',
-    //         learnedTime: '50',
-    //         progress: '25'
-    //     }
-    // }).save((err, curriculum, next) => {
+    // new userCurriculum({
+    //     person: token.id,
+    //     newStudy: true,
+    //     curriculums: [{
+    //         // img: String,
+    //         videoId: '5c22d77b14e8c218542299bf',
+    //         // title: String,        
+    //         // totalTime: Number,
+    //         // picture: String,        
+    //         learnedTime: 100,
+    //         progress: 10
+    //     },{
+    //         // img: String,
+    //         videoId: '5c22d77b14e8c218542299bc',
+    //         // title: String,        
+    //         // totalTime: Number,
+    //         // picture: String,        
+    //         learnedTime: 0,
+    //         progress: 0
+    //     }]
+    // }).save((err, curriculum) => {
     //     if (err) {
     //         res.status(500).json({
     //             err_code: 500,
-    //             message: '哎呀，出错啦'
+    //             message: '服务器出错啦'
     //         })
     //     }
-    // })
+    //     console.log(curriculum);
 
-    curriculum.findOne({ 'person': token.id }, function (err, curriculum) {
-        if (err) {
-            return res.status(500).json({
-                err_code: 500,
-                message: '哎呀，出错啦'
+    // })
+    
+    let cur = []
+    userCurriculum.findOne({ 'person': token.id })
+        .exec()
+        .then(user => {
+            console.log(user);
+            
+            cur = user.curriculums
+            let promises = user.curriculums.map((item, index) => {
+                return video.findById(item.videoId, {
+
+                }).exec()
             })
-        }
-        if (curriculum) {
-            res.status(200).json({
-                err_code: 0,
-                curriculum: curriculum
-            })
-        }
-    })
+            return Promise.all(promises)
+        })
+        .then(list => {
+            console.log(cur);
+            
+            if (list.length === cur.length) {
+                return res.status(200).json({
+                    err_code: 200,
+                    videos: list,
+                    curriculum: cur
+                })
+            }
+        })
 })
 
 
@@ -71,7 +95,7 @@ router.get('/getHeadlineVideo', checkToken, (token, req, res, next) => {
             about = doc
             let promises = doc.map(item => {
                 console.log(item);
-                
+
                 return video.findById(
                     item.videoId,
                     {

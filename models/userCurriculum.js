@@ -1,27 +1,35 @@
 const mongoose = require('mongoose')
-
+const common = require('../routes/common')
 mongoose.connect('mongodb://localhost/newTreate', { useNewUrlParser: true })
 
-const db = mongoose.connection
-
-db.on('error', console.error.bind(console, 'connection error'))
+const curriculumVideoSchema = mongoose.Schema({
+    // img: String,
+    videoId: String,
+    // title: String,        
+    totalTime: Number,
+    lastLearn: {
+        type: Date,
+        default: common.localDate
+    },
+    // updateTime: {
+    //     type: Date,
+    //     default: common.localDate
+    // },
+    // picture: String,        
+    learnedTime: Number,
+    progress: Number
+}, {
+    versionKey: false,
+    timestamps: {createdAt: 'lastLearn', updateAt: 'updateTime'}
+})
 
 const curriculumSchema = mongoose.Schema({
     person: {
         type: String,
         require: true
     },
-    curriculums: {
-        type: Array,
-        img: String,
-        video: String,
-        title: String,
-        totalTime: String,
-        lastLearn: String,
-        picture: String,        
-        learnedTime: String,
-        progress: String
-    }
+    newStudy: Boolean,
+    curriculums: [curriculumVideoSchema]
 })
 
 module.exports = mongoose.model('Curriculum', curriculumSchema);

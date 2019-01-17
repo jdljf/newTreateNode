@@ -10,17 +10,17 @@ const subjectClassifyShema = mongoose.Schema({
     name: String,
     dataName: String,
     img: String,
-    detail: {
-        type: Array,
-        describe: Number,
-        img: String,
-        watched: Number,
-        comment: Number,
-        share: Number,
-        collection: Number,
-        handout: String,
-        test: String
-    }
+    // detail: {
+    //     type: Array,
+    //     describe: Number,
+    //     img: String,
+    //     watched: Number,
+    //     comment: Number,
+    //     share: Number,
+    //     collection: Number,
+    //     handout: String,
+    //     test: String
+    // }
 })
 
 // subjectClassifyShema.static('getClassify', function (name, callback) {
