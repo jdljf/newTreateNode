@@ -271,58 +271,8 @@ router.get('/getSubjectComment', checkToken, (token, req, res, next) => {
                     err_code: 500,
                     message: '服务端出错啦'
                 })
-            })
-        //     function (err, comment) {
-        //         if (err) {
-        //             return res.status(500).json({
-        //                 err_code: 500,
-        //                 message: '哎呀，出错啦'
-        //             })
-        //         }
-        //         console.log(comment)
-        //         res.status(200).json({
-        //             err_code: 200,
-        //             comment
-        //         })
-        //     })
-        // myMessage
-        //     .findOne({ personId: token.id }, {
-        //         "message": { $slice: [start, pageSize] }
-        //     })
-        // .exec()
-        // .then(user => {
-        //     console.log(user);
-
-        //     if (user) {
-        //         res.status(200).json({
-        //             err_code: 0,
-        //             message: user.message
-        //         })
-        //     }
-        // }, (err) => {
-        //     return res.status(500).json({
-        //         err_code: 500,
-        //         message: '服务端出错啦'
-        //     })
-        // })        
+            })   
     }
-
-    // videoNotOfent.findOne(
-    //     { videoId: id },
-    //     { test: false },
-    //     function (err, comment) {
-    //         if (err) {
-    //             return res.status(500).json({
-    //                 err_code: 500,
-    //                 message: '哎呀，出错啦'
-    //             })
-    //         }
-    //         console.log(comment)
-    //         res.status(200).json({
-    //             err_code: 200,
-    //             comment
-    //         })
-    //     })
 })
 
 router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
