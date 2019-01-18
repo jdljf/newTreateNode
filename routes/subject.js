@@ -32,9 +32,6 @@ router.get('/getSubject', (req, res, next) => {
     pageSize = parseInt(pageSize) > 0 ? parseInt(pageSize) : 8;
 
     let skip = (pageNum - 1) * pageSize
-    console.log(dataName);
-    console.log(skip);
-
 
     let result = [], data
     if (dataName == 'medicalHumanity') {
@@ -63,7 +60,6 @@ router.get('/getSubject', (req, res, next) => {
         .exec()
         .then(classifyVideo => {
             result = classifyVideo
-            // console.log(classifyVideo)
 
             let promises = classifyVideo.map(item => {
                 return video.findById(item.videoId).exec()
@@ -127,7 +123,7 @@ router.get('/getSubjectDetail', checkToken, (token, req, res, next) => {
                     collectedVideo = user.collectVideo.some((item) => {
                         return item == subject._id
                     })
-                    
+
                     res.status(200).json({
                         err_code: 200,
                         detail: subject,
@@ -201,7 +197,7 @@ router.get('/getSubAboutVideo', (req, res, next) => {
 
 })
 
-router.get('/getAboutVideo', (req, res, next) => {
+router.get('/getAboutVideo', checkToken, (token, req, res, next) => {
     // console.log(req.query.id);
     let result = []
     let about = []
@@ -235,9 +231,28 @@ router.get('/getAboutVideo', (req, res, next) => {
             // console.log(list);
 
             if (list.length == about.length) {
-                res.status(200).json({
-                    err_code: 200,
-                    list
+
+                personCollect.findOne({ personId: token.id }, function (err, person) {
+                    if (err) {
+                        return res.status(500).json({
+                            err_code: 500,
+                            message: '服务端出错啦'
+                        })
+                    }
+                    // console.log(person.collectVideo);             
+                    // console.log(list)
+
+                    let collecteds = list.map(function (list, index) {
+                        return person.collectVideo.some(function (item, index2) {
+                            return item == list._id
+                        })
+                    })
+                    console.log(collecteds);
+                    res.status(200).json({
+                        err_code: 200,
+                        list,
+                        collecteds
+                    })
                 })
             }
         })
@@ -267,7 +282,6 @@ router.get('/getSubjectComment', checkToken, (token, req, res, next) => {
             .exec()
             .then(user => {
                 console.log(user);
-
                 if (user) {
                     res.status(200).json({
                         err_code: 200,
@@ -312,17 +326,13 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
                         message: '服务器出错啦'
                     })
                 }
-                return res.status(200).json({
-                    err_code: 200,
-                    message: '添加成功'
-                })
             })
 
             video.findByIdAndUpdate(videoId, {
                 $inc: {
                     "comment": 1
                 }
-            }, function (err, result) {
+            }, function (err, video) {
 
                 if (err) {
                     return res.status(500).json({
@@ -330,6 +340,12 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
                         message: '服务器出错啦'
                     })
                 }
+
+                return res.status(200).json({
+                    err_code: 200,
+                    comment: video.comment,
+                    message: '添加成功'
+                })
             })
         }
         if (hasVideo) {
@@ -338,8 +354,11 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
             }, {
                     '$push': {
                         comment: {
-                            commentName: token.name,
-                            content: personComment
+                            $each: [{
+                                commentName: token.name,
+                                content: personComment
+                            }],
+                            $position: 0
                         }
                     }
                 }, function (err, result) {
@@ -354,7 +373,7 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
                         $inc: {
                             "comment": 1
                         }
-                    }, function (err, result) {
+                    }, function (err, video) {
 
                         if (err) {
                             return res.status(500).json({
@@ -362,11 +381,15 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
                                 message: '服务器出错啦'
                             })
                         }
+                        console.log(video);
+
+                        return res.status(200).json({
+                            err_code: 200,
+                            comment: video.comment,
+                            message: '添加成功'
+                        })
                     })
-                    return res.status(200).json({
-                        err_code: 200,
-                        message: '添加成功'
-                    })
+
                 })
         }
     })
@@ -387,7 +410,7 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
                 if (err) {
                     return res.status(500).json({
                         err_code: 500,
-                        message: '哎呀，出错啦'
+                        message: '服务端出错啦'
                     })
                 }
                 console.log(user);
@@ -398,69 +421,81 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
                             personId: token.id,
                             collectVideo: [videoId]
                         })
-                            .save(function (err, suc) {
+                            .save(function (err, result) {
                                 if (err) {
                                     return res.status(500).json({
                                         err_code: 500,
                                         message: '服务端出错啦'
                                     })
                                 }
-                                // console.log(comment)
-                                res.status(200).json({
-                                    err_code: 200,
-                                    suc
-                                })
                             })
+
+                        video.findByIdAndUpdate(videoId, {
+                            $inc: {
+                                "collect": 1
+                            }
+                        }, function (err, video) {
+                            if (err) {
+                                return res.status(500).json({
+                                    err_code: 500,
+                                    message: '服务器出错啦'
+                                })
+                            }
+
+                            res.status(200).json({
+                                err_code: 200,
+                                collect: video.collect,
+                                message: '收藏成功'
+                            })
+                        })
                     }
                 }
 
                 if (user) {
                     if (wantCollect == 'true') {
-                        personCollect.findOne({
-                            $and: [
-                                { personId: token.id, },
-                                { collectVideo: { $in: [videoId] } }
-                            ]
-                        }, function (err, collectedVideo) {
+                        console.log('要收藏');
+
+                        personCollect.findOneAndUpdate({
+                            personId: token.id,
+                        }, {
+                                $addToSet: {
+                                    collectVideo: videoId
+                                }
+                            }, function (err, result) {
+                                if (err) {
+                                    return res.status(500).json({
+                                        err_code: 500,
+                                        message: '服务端出错啦'
+                                    })
+                                }
+                            })
+                        video.findById(videoId, function (err, data) {
+                            console.log(data);
+
+                        })
+                        video.findByIdAndUpdate(videoId, {
+                            $inc: {
+                                "collect": 1
+                            }
+                        }, function (err, video) {
+
                             if (err) {
                                 return res.status(500).json({
                                     err_code: 500,
-                                    message: '服务端出错啦'
+                                    message: '服务器出错啦'
                                 })
                             }
-
-                            if (!collectedVideo) {
-                                personCollect.findOneAndUpdate({
-                                    personId: token.id,
-                                }, {
-                                        $push: {
-                                            collectVideo: videoId
-                                        }
-                                    }, function (err, result) {
-                                        if (err) {
-                                            return res.status(500).json({
-                                                err_code: 500,
-                                                message: '服务端出错啦'
-                                            })
-                                        }
-                                        console.log(result)
-                                        res.status(200).json({
-                                            err_code: 200,
-                                            message: '收藏成功'
-                                        })
-                                    })
-                            }
-
-                            if (collectedVideo) {
-                                res.status(200).json({
-                                    err_code: 200,
-                                    message: '该视频已收藏'
-                                })
-                            }
+                            console.log(video);
+                            let collect = video.collect + 1
+                            res.status(200).json({
+                                err_code: 200,
+                                collect: collect,
+                                message: '收藏成功'
+                            })
                         })
-
                     }
                     else if (wantCollect == 'false') {
+                        console.log('取消收藏');
 
                         personCollect.findOneAndUpdate({
                             personId: token.id
@@ -475,19 +510,31 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
                                         message: '服务端出错啦'
                                     })
                                 }
-                                console.log(result)
-                                res.status(200).json({
-                                    err_code: 200,
-                                    message: '取消收藏成功'
-                                })
                             })
+                        video.findByIdAndUpdate(videoId, {
+                            $inc: {
+                                "collect": -1
+                            }
+                        }, function (err, video) {
+
+                            if (err) {
+                                return res.status(500).json({
+                                    err_code: 500,
+                                    message: '服务器出错啦'
+                                })
+                            }
+                            console.log(video);
+                            let collect = video.collect - 1
+                            res.status(200).json({
+                                err_code: 200,
+                                collect: collect,
+                                message: '取消收藏成功'
+                            })
+                        })
                     }
                 }
             })
     }
-
-
-
 })
 
 router.get('/getTest', (req, res, next) => {
