@@ -82,10 +82,6 @@ router.get('/getSubject', (req, res, next) => {
                 message: '服务端出错啦'
             })
         })
-    // res.status(200).json({
-    //                     err_code: 200,
-    //                     videos: []
-    //                 })
 })
 
 router.get('/getClassify', (req, res, next) => {

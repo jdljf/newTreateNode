@@ -79,7 +79,7 @@ router.get('/informationFlow', (req, res, next) => {
     else if (dataName == 'recommend') {
         data = recommend
     }
-    // console.log(data);
+    console.log(data);
 
     data.find()
         .limit(pageSize)
@@ -107,32 +107,6 @@ router.get('/informationFlow', (req, res, next) => {
                 message: '服务端出错啦'
             })
         })
-
-
-    // _flowVideo.find({ flowId: '5c22d9ff8ca8c00e04c06407' }, {
-    //     _id: false,
-    //     __v: false
-    // }, {
-    //         limit: limitCount
-    //     })
-    //     .exec()
-    //     .then((flowVideo) => {
-
-    //         flow = flowVideo
-    //         let promiese = flowVideo.map((item) => {
-    //             return video.findById(item.videoId).exec()
-    //         })
-    //         return Promise.all(promiese)
-    //     })
-    //     .then((videos) => {
-    //         // console.log(videos);
-    //         if (videos.length === flow.length) {
-    //             res.status(200).json({
-    //                 err_code: 200,
-    //                 videos
-    //             })
-    //         }
-    //     })
 })
 
 router.get('/getFlowClassify', (req, res, next) => {

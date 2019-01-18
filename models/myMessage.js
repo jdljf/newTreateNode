@@ -29,6 +29,9 @@ const messageSchema = mongoose.Schema({
         default: Date.now
     },
     messageDetail: [messageDetailSchema]
+}, {
+    versionKey: false,
+    timestamps: { createdAt: 'create_Time', updatedAt: 'update_Time' }
 })
 
 const myMessageSchema = mongoose.Schema({
