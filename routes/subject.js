@@ -33,7 +33,7 @@ router.get('/getSubject', (req, res, next) => {
     let skip = (pageNum - 1) * pageSize
     console.log(dataName);
     console.log(skip);
-    
+
 
     let result = [], data
     if (dataName == 'medicalHumanity') {
@@ -82,10 +82,6 @@ router.get('/getSubject', (req, res, next) => {
                 message: '服务端出错啦'
             })
         })
-    // res.status(200).json({
-    //                     err_code: 200,
-    //                     videos: []
-    //                 })
 })
 
 router.get('/getClassify', (req, res, next) => {
@@ -239,26 +235,44 @@ router.get('/getAboutVideo', (req, res, next) => {
         })
 })
 
-router.get('/getSubjectComment', (req, res, next) => {
+router.get('/getSubjectComment', checkToken, (token, req, res, next) => {
     // console.log(req.query);
-    const { index, id } = req.query
+    let { id, pageNum, pageSize } = req.query
 
-    videoNotOfent.findOne(
-        { videoId: id },
-        { test: false },
-        function (err, comment) {
-            if (err) {
+    if (token || token.id !== "") {
+        // console.log(token.id);
+        pageNum = parseInt(pageNum) > 0 ? parseInt(pageNum) : 1;
+        pageSize = parseInt(pageSize) > 0 ? parseInt(pageSize) : 8;
+
+        let start = (pageNum - 1) * pageSize
+        let end = pageNum * pageSize
+
+        console.log(start);
+        console.log(end);
+        
+        videoNotOfent.findOne(
+            { videoId: id },
+            {
+                test: false,
+                comment: { $slice: [start, pageSize] }
+            })
+            .exec()
+            .then(user => {
+                console.log(user);
+
+                if (user) {
+                    res.status(200).json({
+                        err_code: 200,
+                        comment: user.comment
+                    })
+                }
+            }, (err) => {
                 return res.status(500).json({
                     err_code: 500,
-                    message: '哎呀，出错啦'
+                    message: '服务端出错啦'
                 })
-            }
-            console.log(comment)
-            res.status(200).json({
-                err_code: 200,
-                comment
-            })
-        })
+            })   
+    }
 })
 
 router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
