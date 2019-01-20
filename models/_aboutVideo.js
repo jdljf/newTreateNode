@@ -8,7 +8,9 @@ const db = mongoose.connection
 
 const aboutVideo = mongoose.Schema({
     videoId: String,
-    aboutId: String
+    aboutId: {
+        type: Array
+    }
 })
 
 module.exports = mongoose.model('About_Video', aboutVideo);
