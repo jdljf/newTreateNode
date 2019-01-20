@@ -158,18 +158,21 @@ router.get('/getSubAboutVideo', (req, res, next) => {
     // console.log('sfsfs', req.query.id);
     let result = []
     let about = []
-    aboutVideo.find(
-        { videoId: req.query.id }
+    aboutVideo.findOne(
+        { videoId: req.query.id },
+        {
+            "aboutId": { $slice: [0, 3] }
+        }
     )
         .exec()
         .then((doc) => {
-            // console.log(doc);
+            console.log('169',doc);
 
-            about = doc
-            let promises = doc.map(item => {
+            about = doc.aboutId
+            let promises = doc.aboutId.map(item => {
 
                 return video.findById(
-                    item.aboutId,
+                    item,
                     {
                         handout: 0,
                         test: 0,
@@ -178,7 +181,7 @@ router.get('/getSubAboutVideo', (req, res, next) => {
                         share: 0,
                         durationTime: 0
                     },
-                    { limit: 3 }
+                    // { limit: 3 }
                 ).exec()
             })
             return Promise.all(promises)
@@ -198,21 +201,33 @@ router.get('/getSubAboutVideo', (req, res, next) => {
 })
 
 router.get('/getAboutVideo', checkToken, (token, req, res, next) => {
-    // console.log(req.query.id);
-    let result = []
+    console.log(req.query);
+    let { pageNum, pageSize } = req.query
     let about = []
-    aboutVideo.find(
-        { videoId: req.query.id }
+    pageNum = parseInt(pageNum) > 0 ? parseInt(pageNum) : 1;
+        pageSize = parseInt(pageSize) > 0 ? parseInt(pageSize) : 8;
+
+    let skip = (pageNum - 1) * pageSize
+    let start = (pageNum - 1) * pageSize
+    let end = pageNum * pageSize
+    
+    aboutVideo.findOne(
+        { videoId: req.query.id },
+        {
+            "aboutId": { $slice: [start, pageSize] }
+        }
     )
         .exec()
+        // .limit(pageSize)
+        // .skip(skip)
         .then((doc) => {
-            // console.log(doc);
+            console.log(doc);
 
-            about = doc
-            let promises = doc.map(item => {
+            about = doc.aboutId
+            let promises = doc.aboutId.map(item => {
 
                 return video.findById(
-                    item.aboutId,
+                    item,
                     {
                         handout: 0,
                         test: 0,
@@ -228,10 +243,8 @@ router.get('/getAboutVideo', checkToken, (token, req, res, next) => {
 
         })
         .then((list) => {
-            // console.log(list);
-
+            
             if (list.length == about.length) {
-
                 personCollect.findOne({ personId: token.id }, function (err, person) {
                     if (err) {
                         return res.status(500).json({
@@ -395,6 +408,16 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
     })
 })
 
+router.get('/collectAboutVideo', checkToken, (token, req, res, next) => {
+    // console.log(req.query.id);
+    let { wantCollect, videoId } = req.query
+    console.log(req.query);
+
+    if (token || token.id !== "") {
+        
+    }
+})
+
 router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
     // console.log(req.query.id);
     let { wantCollect, videoId } = req.query
@@ -414,7 +437,7 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
                     })
                 }
                 console.log(user);
-
+                
                 if (!user) {
                     if (wantCollect == true) {
                         new personCollect({
