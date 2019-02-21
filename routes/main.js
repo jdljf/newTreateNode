@@ -1,11 +1,12 @@
 const express = require('express')
 const video = require('../models/video')
+const videoNotOfent = require('../models/videoNotOfent')
 const informationFlow = require('../models/informationFlow')
 const _flowVideo = require('../models/_flowVideo')
 const subjectClassify = require('../models/subjectClassify')
 
 const clinical = require('../models/flow/clinical')
-const excellentCourse= require('../models/flow/excellentCourse')
+const excellentCourse = require('../models/flow/excellentCourse')
 const grassrootsTastes = require('../models/flow/grassrootsTastes')
 const medicalExamination = require('../models/flow/medicalExamination')
 const recommend = require('../models/flow/recommend')
@@ -14,6 +15,121 @@ const router = express.Router()
 let limitCount = 20
 
 router.get('/getBanner', (req, res, next) => {
+
+
+    // for (let i = 0; i < 150; i++) {
+    //     new video({
+    //         "watched": 432,
+    //         "publisher": "同心圆",
+    //         "canStudy": 1,
+    //         "isVideo": false,
+    //         "comment": 427,
+    //         "collect": 765,
+    //         "share": 543,
+    //         "handout": [],
+    //         "test": [],
+    //         "img": "sdads",
+    //         "title": "发生尺神经损伤后会有哪些表现?",
+    //         "durationTime": 8,
+    //         "ReleasedTime": 231,
+    //     }).save()
+    // }
+
+    // video.find()
+    //     .skip(235)
+    //     .exec()
+    //     .then(data => {
+
+    //         console.log('yyyyy',data._id);
+    //         for (let i = 0; i < data.length; i++) {
+    //             console.log(data[i]._id);
+
+    //             new videoNotOfent({
+    //                 videoId: data[i]._id
+    //             }).save()
+    //         }
+    //     })
+
+    // video.find()
+    //     .limit(30)
+    //     .skip(235)
+    //     .exec()
+    //     .then(data => {
+
+    //         console.log(data.length);
+    //         for (let i = 0; i < data.length; i++) {
+    //             console.log(data[i]._id);
+
+    //             new clinical({
+    //                 videoId: data[i]._id
+    //             }).save()
+    //         }
+    //     })
+
+    // video.find()
+    //     .limit(30)
+    //     .skip(265)
+    //     .exec()
+    //     .then(data => {
+
+    //         console.log(data.length);
+    //         for (let i = 0; i < data.length; i++) {
+    //             console.log(data[i]._id);
+
+    //             new excellentCourse({
+    //                 videoId: data[i]._id
+    //             }).save()
+    //         }
+    //     })
+
+    // video.find()
+    //     .limit(30)
+    //     .skip(295)
+    //     .exec()
+    //     .then(data => {
+
+    //         console.log(data.length);
+    //         for (let i = 0; i < data.length; i++) {
+    //             console.log(data[i]._id);
+
+    //             new grassrootsTastes({
+    //                 videoId: data[i]._id
+    //             }).save()
+    //         }
+    //     })
+
+    // video.find()
+    //     .limit(30)
+    //     .skip(325)
+    //     .exec()
+    //     .then(data => {
+
+    //         console.log(data.length);
+    //         for (let i = 0; i < data.length; i++) {
+    //             console.log(data[i]._id);
+
+    //             new medicalExamination({
+    //                 videoId: data[i]._id
+    //             }).save()
+    //         }
+    //     })
+
+    // video.find()
+    //     .limit(30)
+    //     .skip(355)
+    //     .exec()
+    //     .then(data => {
+
+    //         console.log(data.length);
+    //         for (let i = 0; i < data.length; i++) {
+    //             console.log(data[i]._id);
+
+    //             new recommend({
+    //                 videoId: data[i]._id
+    //             }).save()
+    //         }
+    //     })
+
     return res.status(200).send({
         err_code: 200,
         banner: [
@@ -59,9 +175,9 @@ router.get('/informationFlow', (req, res, next) => {
     pageSize = parseInt(pageSize) > 0 ? parseInt(pageSize) : 8;
 
     let skip = (pageNum - 1) * pageSize
-    console.log(dataName);
-    console.log(skip);
-    
+    // console.log(dataName);
+    // console.log(skip);
+
 
     let result = [], data
     if (dataName == 'clinical') {
@@ -79,7 +195,7 @@ router.get('/informationFlow', (req, res, next) => {
     else if (dataName == 'recommend') {
         data = recommend
     }
-    console.log(data);
+    // console.log(data);
 
     data.find()
         .limit(pageSize)
