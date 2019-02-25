@@ -251,7 +251,7 @@ router.post('/login', function (req, res, next) {
         idNumber: user.idNumber
       },
         'liaojunfeng',
-        { expiresIn: '1h' }
+        { expiresIn: '7d' }
       )
 
       console.log(token)
