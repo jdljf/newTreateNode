@@ -125,8 +125,6 @@ router.get('/getClassify', (req, res, next) => {
 
 router.get('/getSubjectDetail', checkToken, (token, req, res, next) => {
     const { id } = req.query
-    console.log(id);
-
 
     video.find()
         .exec()
@@ -238,6 +236,7 @@ router.get('/getSubAboutVideo', (req, res, next) => {
     // console.log('sfsfs', req.query.id);
     let result = []
     let about = []
+
     aboutVideo.findOne(
         { videoId: req.query.id },
         {
@@ -246,8 +245,8 @@ router.get('/getSubAboutVideo', (req, res, next) => {
     )
         .exec()
         .then((doc) => {
-            console.log('169', doc);
-
+            console.log(doc);
+            
             about = doc.aboutId
             let promises = doc.aboutId.map(item => {
 
@@ -281,7 +280,7 @@ router.get('/getSubAboutVideo', (req, res, next) => {
 })
 
 router.get('/getAboutVideo', checkToken, (token, req, res, next) => {
-    console.log(req.query);
+
     let { pageNum, pageSize } = req.query
     let about = []
     pageNum = parseInt(pageNum) > 0 ? parseInt(pageNum) : 1;
@@ -294,18 +293,19 @@ router.get('/getAboutVideo', checkToken, (token, req, res, next) => {
     aboutVideo.findOne(
         { videoId: req.query.id },
         function (err, data) {
+            console.log(data);
+            
             if (data.aboutId.length > 0) {
                 aboutVideo.findOne(
-
+                    { videoId: req.query.id },
                     {
                         "aboutId": { $slice: [start, pageSize] }
                     }
                 )
-                    .exec()
-                    // .limit(pageSize)
-                    // .skip(skip)
+                    .limit(pageSize)
+                    .skip(skip)
+                    .exec()                    
                     .then((doc) => {
-                        console.log(doc);
 
                         if (doc.aboutId.length > 0) {
                             about = doc.aboutId
@@ -345,7 +345,6 @@ router.get('/getAboutVideo', checkToken, (token, req, res, next) => {
                                             return item == list._id
                                         })
                                     })
-                                    console.log(collecteds);
                                     res.status(200).json({
                                         err_code: 200,
                                         list,
@@ -378,9 +377,6 @@ router.get('/getSubjectComment', checkToken, (token, req, res, next) => {
         let start = (pageNum - 1) * pageSize
         let end = pageNum * pageSize
 
-        console.log(start);
-        console.log(end);
-
         videoNotOfent.findOne(
             { videoId: id },
             {
@@ -389,7 +385,6 @@ router.get('/getSubjectComment', checkToken, (token, req, res, next) => {
             })
             .exec()
             .then(user => {
-                console.log(user);
                 if (user) {
                     res.status(200).json({
                         err_code: 200,
@@ -489,7 +484,6 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
                                 message: '服务器出错啦'
                             })
                         }
-                        console.log(video);
 
                         return res.status(200).json({
                             err_code: 200,
@@ -506,7 +500,6 @@ router.post('/sureAddVideoComment', checkToken, (token, req, res, next) => {
 router.get('/collectAboutVideo', checkToken, (token, req, res, next) => {
     // console.log(req.query.id);
     let { wantCollect, videoId } = req.query
-    console.log(req.query);
 
     if (token || token.id !== "") {
 
@@ -516,8 +509,6 @@ router.get('/collectAboutVideo', checkToken, (token, req, res, next) => {
 router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
     // console.log(req.query.id);
     let { wantCollect, videoId } = req.query
-    console.log(token);
-    console.log(req.query);
 
     if (token || token.id !== "") {
         personCollect.findOne(
@@ -531,7 +522,6 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
                         message: '服务端出错啦'
                     })
                 }
-                console.log(user);
 
                 if (!user) {
                     if (wantCollect == true) {
@@ -571,7 +561,6 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
 
                 if (user) {
                     if (wantCollect == 'true') {
-                        console.log('要收藏');
 
                         personCollect.findOneAndUpdate({
                             personId: token.id,
@@ -587,10 +576,10 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
                                     })
                                 }
                             })
-                        video.findById(videoId, function (err, data) {
-                            console.log(data);
+                        // video.findById(videoId, function (err, data) {
+                        //     console.log(data);
 
-                        })
+                        // })
                         video.findByIdAndUpdate(videoId, {
                             $inc: {
                                 "collect": 1
@@ -603,7 +592,6 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
                                     message: '服务器出错啦'
                                 })
                             }
-                            console.log(video);
                             let collect = video.collect + 1
                             res.status(200).json({
                                 err_code: 200,
@@ -613,7 +601,6 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
                         })
                     }
                     else if (wantCollect == 'false') {
-                        console.log('取消收藏');
 
                         personCollect.findOneAndUpdate({
                             personId: token.id
@@ -641,7 +628,6 @@ router.get('/wantToCollectVideo', checkToken, (token, req, res, next) => {
                                     message: '服务器出错啦'
                                 })
                             }
-                            console.log(video);
                             let collect = video.collect - 1
                             res.status(200).json({
                                 err_code: 200,
@@ -666,525 +652,519 @@ router.get('/getTest', (req, res, next) => {
     // console.log(req.query.id);
     let { index, id } = req.query
 
-    video.findOneAndUpdate({ _id: '5c6567524143192330c986a7' }, {
-        '$set': {
-            title: '肠炎的症状有哪些？'
-        }
-    }, function (err, data) {
-        console.log(data);
+    // video.findOneAndUpdate({ _id: '5c6567524143192330c986a7' }, {
+    //     '$set': {
+    //         title: '肠炎的症状有哪些？'
+    //     }
+    // }, function (err, data) {
 
-    })
-    video.findOneAndUpdate({ _id: '5c6567524143192330c986ab' }, {
-        '$set': {
-            title: '残胃癌都有哪些表现？'
-        }
-    }, function (err, data) {
-        console.log(data);
+    // })
+    // video.findOneAndUpdate({ _id: '5c6567524143192330c986ab' }, {
+    //     '$set': {
+    //         title: '残胃癌都有哪些表现？'
+    //     }
+    // }, function (err, data) {
 
-    })
-    video.findOneAndUpdate({ _id: '5c6567524143192330c986a4' }, {
-        '$set': {
-            title: '表皮囊肿有哪些常见表现？'
-        }
-    }, function (err, data) {
-        console.log(data);
+    // })
+    // video.findOneAndUpdate({ _id: '5c6567524143192330c986a4' }, {
+    //     '$set': {
+    //         title: '表皮囊肿有哪些常见表现？'
+    //     }
+    // }, function (err, data) {
 
-    })
-    video.findOneAndUpdate({ _id: '5c6567524143192330c986a8' }, {
-        '$set': {
-            title: '肠梗阻有什么症状？'
-        }
-    }, function (err, data) {
-        console.log(data);
+    // })
+    // video.findOneAndUpdate({ _id: '5c6567524143192330c986a8' }, {
+    //     '$set': {
+    //         title: '肠梗阻有什么症状？'
+    //     }
+    // }, function (err, data) {
 
-    })
-    video.findOneAndUpdate({ _id: '5c6567524143192330c986a5' }, {
-        '$set': {
-            title: '肠结核的分型主要有哪些？'
-        }
-    }, function (err, data) {
-        console.log(data);
+    // })
+    // video.findOneAndUpdate({ _id: '5c6567524143192330c986a5' }, {
+    //     '$set': {
+    //         title: '肠结核的分型主要有哪些？'
+    //     }
+    // }, function (err, data) {
 
-    })
-    video.findOneAndUpdate({ _id: '5c6567524143192330c986a6' }, {
-        '$set': {
-            title: '大网膜炎有什么症状？'
-        }
-    }, function (err, data) {
-        console.log(data);
+    // })
+    // video.findOneAndUpdate({ _id: '5c6567524143192330c986a6' }, {
+    //     '$set': {
+    //         title: '大网膜炎有什么症状？'
+    //     }
+    // }, function (err, data) {
 
-    })
+    // })
 
-    videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c986f1' }, {
-        '$set': {
-            test: [
-                {
-                    "trueAnswer": [
-                        "B"
-                    ],
-                    "answer": [
-                        "曲霉菌",
-                        "轮状病毒",
-                        "溶组织内阿米巴原虫",
-                        "白色念珠菌"
-                    ],
-                    "question": "病毒性肠炎的病因是什么？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C", "D"
-                    ],
-                    "answer": [
-                        "避免腹部受冷",
-                        "加强锻炼，提高自身免疫力",
-                        "不要吃生冷、坚硬、辛辣及变质的食物",
-                        "豆类等产气食物要避免"
-                    ],
-                    "question": "肠炎生活中应该注意什么？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "B"
-                    ],
-                    "answer": [
-                        "会",
-                        "不会",
-                    ],
-                    "question": "肠炎会传染吗？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "B", "C", "D"
-                    ],
-                    "answer": [
-                        "感染性肠炎",
-                        "寄生虫性肠炎",
-                        "真菌性肠炎",
-                        "病毒性肠炎"
-                    ],
-                    "question": "肠炎的种类？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C", "D"
-                    ],
-                    "answer": [
-                        "起病急",
-                        "恶心",
-                        '频繁呕吐腹泻',
-                        '发热'
-                    ],
-                    "question": "肠炎的症状有哪些？",
-                    "selectType": 1,
-                    "fraction": 20
-                }
-            ]
+    // videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c986f1' }, {
+    //     '$set': {
+    //         test: [
+    //             {
+    //                 "trueAnswer": [
+    //                     "B"
+    //                 ],
+    //                 "answer": [
+    //                     "曲霉菌",
+    //                     "轮状病毒",
+    //                     "溶组织内阿米巴原虫",
+    //                     "白色念珠菌"
+    //                 ],
+    //                 "question": "病毒性肠炎的病因是什么？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "避免腹部受冷",
+    //                     "加强锻炼，提高自身免疫力",
+    //                     "不要吃生冷、坚硬、辛辣及变质的食物",
+    //                     "豆类等产气食物要避免"
+    //                 ],
+    //                 "question": "肠炎生活中应该注意什么？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "B"
+    //                 ],
+    //                 "answer": [
+    //                     "会",
+    //                     "不会",
+    //                 ],
+    //                 "question": "肠炎会传染吗？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "感染性肠炎",
+    //                     "寄生虫性肠炎",
+    //                     "真菌性肠炎",
+    //                     "病毒性肠炎"
+    //                 ],
+    //                 "question": "肠炎的种类？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "起病急",
+    //                     "恶心",
+    //                     '频繁呕吐腹泻',
+    //                     '发热'
+    //                 ],
+    //                 "question": "肠炎的症状有哪些？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             }
+    //         ]
 
-        }
-    }, function (err, data) {
-        // console.log(data);
+    //     }
+    // }, function (err, data) {
+    //     // console.log(data);
 
-    })
+    // })
 
-    videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c98714' }, {
-        '$set': {
-            test: [
-                {
-                    "trueAnswer": [
-                        "A"
-                    ],
-                    "answer": [
-                        "是",
-                        "不是",
-                    ],
-                    "question": "残胃癌是不是胃癌？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C", "D"
-                    ],
-                    "answer": [
-                        "上腹部闷胀不适",
-                        "恶心",
-                        "呕吐",
-                        "吞咽困难"
-                    ],
-                    "question": "残胃癌都有哪些表现？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C", "D"
-                    ],
-                    "answer": [
-                        "内镜下切除手术",
-                        "切除癌肿及残胃并清扫相关的淋巴结",
-                        "姑息性手术",
-                        "化疗"
-                    ],
-                    "question": "怎么治疗残胃癌？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C"
-                    ],
-                    "answer": [
-                        "少量多餐",
-                        "少糖及其他小分子了的碳水化合物（甜食）的摄入",
-                        "进食后平卧 10～30 分钟",
-                        "对正常饮食无影响"
-                    ],
-                    "question": "做了胃大部分切除术后饮食应注意什么？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A"
-                    ],
-                    "answer": [
-                        "胃镜检查",
-                        "照 B 超",
-                        '照 CT',
-                        '内镜检查'
-                    ],
-                    "question": "怎么诊断残胃癌？",
-                    "selectType": 1,
-                    "fraction": 20
-                }
-            ]
-        }
-    }, function (err, data) {
-        // console.log(data);
+    // videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c98714' }, {
+    //     '$set': {
+    //         test: [
+    //             {
+    //                 "trueAnswer": [
+    //                     "A"
+    //                 ],
+    //                 "answer": [
+    //                     "是",
+    //                     "不是",
+    //                 ],
+    //                 "question": "残胃癌是不是胃癌？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "上腹部闷胀不适",
+    //                     "恶心",
+    //                     "呕吐",
+    //                     "吞咽困难"
+    //                 ],
+    //                 "question": "残胃癌都有哪些表现？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "内镜下切除手术",
+    //                     "切除癌肿及残胃并清扫相关的淋巴结",
+    //                     "姑息性手术",
+    //                     "化疗"
+    //                 ],
+    //                 "question": "怎么治疗残胃癌？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C"
+    //                 ],
+    //                 "answer": [
+    //                     "少量多餐",
+    //                     "少糖及其他小分子了的碳水化合物（甜食）的摄入",
+    //                     "进食后平卧 10～30 分钟",
+    //                     "对正常饮食无影响"
+    //                 ],
+    //                 "question": "做了胃大部分切除术后饮食应注意什么？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A"
+    //                 ],
+    //                 "answer": [
+    //                     "胃镜检查",
+    //                     "照 B 超",
+    //                     '照 CT',
+    //                     '内镜检查'
+    //                 ],
+    //                 "question": "怎么诊断残胃癌？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             }
+    //         ]
+    //     }
+    // }, function (err, data) {
+    //     // console.log(data);
 
-    })
+    // })
 
-    videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c986f5' }, {
-        '$set': {
-            test: [
-                {
-                    "trueAnswer": [
-                        "A", "B"
-                    ],
-                    "answer": [
-                        "皮肤表面的半球形隆起肿物",
-                        "直径大小从 0.5cm 至数厘米不等",
-                        "头疼发热",
-                        "腹泻"
-                    ],
-                    "question": "表皮囊肿有哪些常见表现？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C", "D"
-                    ],
-                    "answer": [
-                        "局部炎症反应",
-                        "囊肿破裂",
-                        "继发感染",
-                        "皮肤癌"
-                    ],
-                    "question": "表皮囊肿会引起哪些并发症？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "D"
-                    ],
-                    "answer": [
-                        "骨科",
-                        "传染科",
-                        "遗传病科",
-                        "皮肤科"
-                    ],
-                    "question": "表皮囊肿要去看哪个科？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C"
-                    ],
-                    "answer": [
-                        "囊肿破裂、疼痛或感染",
-                        "囊肿影响美容",
-                        "囊肿快速增大",
-                        "肿囊缩小"
-                    ],
-                    "question": "什么情况下表皮囊肿需积极手术治疗？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "C"
-                    ],
-                    "answer": [
-                        "囊肿影响美容",
-                        "囊肿快速增大",
-                        '表皮囊肿继发局部炎症反应时',
-                        '囊肿破裂、疼痛或感染'
-                    ],
-                    "question": "什么情况下表皮囊肿不适合立即手术？",
-                    "selectType": 1,
-                    "fraction": 20
-                }
-            ]
-        }
-    }, function (err, data) {
-        // console.log(data);
+    // videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c986f5' }, {
+    //     '$set': {
+    //         test: [
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B"
+    //                 ],
+    //                 "answer": [
+    //                     "皮肤表面的半球形隆起肿物",
+    //                     "直径大小从 0.5cm 至数厘米不等",
+    //                     "头疼发热",
+    //                     "腹泻"
+    //                 ],
+    //                 "question": "表皮囊肿有哪些常见表现？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "局部炎症反应",
+    //                     "囊肿破裂",
+    //                     "继发感染",
+    //                     "皮肤癌"
+    //                 ],
+    //                 "question": "表皮囊肿会引起哪些并发症？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "D"
+    //                 ],
+    //                 "answer": [
+    //                     "骨科",
+    //                     "传染科",
+    //                     "遗传病科",
+    //                     "皮肤科"
+    //                 ],
+    //                 "question": "表皮囊肿要去看哪个科？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C"
+    //                 ],
+    //                 "answer": [
+    //                     "囊肿破裂、疼痛或感染",
+    //                     "囊肿影响美容",
+    //                     "囊肿快速增大",
+    //                     "肿囊缩小"
+    //                 ],
+    //                 "question": "什么情况下表皮囊肿需积极手术治疗？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "C"
+    //                 ],
+    //                 "answer": [
+    //                     "囊肿影响美容",
+    //                     "囊肿快速增大",
+    //                     '表皮囊肿继发局部炎症反应时',
+    //                     '囊肿破裂、疼痛或感染'
+    //                 ],
+    //                 "question": "什么情况下表皮囊肿不适合立即手术？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             }
+    //         ]
+    //     }
+    // }, function (err, data) {
+    //     // console.log(data);
 
-    })
+    // })
 
-    videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c98718' }, {
-        '$set': {
-            test: [
-                {
-                    "trueAnswer": [
-                        "A", "B"
-                    ],
-                    "answer": [
-                        "休克",
-                        "呼吸不畅",
-                        "四肢无力",
-                        "高血压"
-                    ],
-                    "question": "肠梗阻危急情况有什么？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "B", "C", "D"
-                    ],
-                    "answer": [
-                        "癌症",
-                        "发生脓毒血症",
-                        "在腹腔内发生感染出现腹膜炎",
-                        "肠管缺血坏死会引起溃破穿孔",
-                    ],
-                    "question": "肠梗阻有哪些并发症？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "B"
-                    ],
-                    "answer": [
-                        "胃动脉",
-                        "肠系膜动脉",
-                        "胃静脉",
-                        "肝动脉"
-                    ],
-                    "question": "肠道管壁是由一些什么血管来供能供氧的",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "C"
-                    ],
-                    "answer": [
-                        "皮肤科",
-                        "传染科",
-                        "急诊外科",
-                        "内科"
-                    ],
-                    "question": "肠梗阻应该看什么科？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A"
-                    ],
-                    "answer": [
-                        "需要",
-                        "不需要",
-                    ],
-                    "question": "坏死没有功能的肠段需要进行肠切除吗？",
-                    "selectType": 1,
-                    "fraction": 20
-                }
-            ]
-        }
-    }, function (err, data) {
-        // console.log(data);
+    // videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c98718' }, {
+    //     '$set': {
+    //         test: [
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B"
+    //                 ],
+    //                 "answer": [
+    //                     "休克",
+    //                     "呼吸不畅",
+    //                     "四肢无力",
+    //                     "高血压"
+    //                 ],
+    //                 "question": "肠梗阻危急情况有什么？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "癌症",
+    //                     "发生脓毒血症",
+    //                     "在腹腔内发生感染出现腹膜炎",
+    //                     "肠管缺血坏死会引起溃破穿孔",
+    //                 ],
+    //                 "question": "肠梗阻有哪些并发症？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "B"
+    //                 ],
+    //                 "answer": [
+    //                     "胃动脉",
+    //                     "肠系膜动脉",
+    //                     "胃静脉",
+    //                     "肝动脉"
+    //                 ],
+    //                 "question": "肠道管壁是由一些什么血管来供能供氧的",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "C"
+    //                 ],
+    //                 "answer": [
+    //                     "皮肤科",
+    //                     "传染科",
+    //                     "急诊外科",
+    //                     "内科"
+    //                 ],
+    //                 "question": "肠梗阻应该看什么科？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A"
+    //                 ],
+    //                 "answer": [
+    //                     "需要",
+    //                     "不需要",
+    //                 ],
+    //                 "question": "坏死没有功能的肠段需要进行肠切除吗？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             }
+    //         ]
+    //     }
+    // }, function (err, data) {
+    //     // console.log(data);
 
-    })
+    // })
 
-    videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c9871c' }, {
-        '$set': {
-            test: [
-                {
-                    "trueAnswer": [
-                        "A", "D"
-                    ],
-                    "answer": [
-                        "增生型",
-                        "肿瘤型",
-                        "先天型",
-                        "溃疡型"
-                    ],
-                    "question": "肠结核的分型主要有哪些？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C", "D"
-                    ],
-                    "answer": [
-                        "开放性肺结核患者咽下含有结核菌的痰液",
-                        "正常人与开放性肺结核患者共同饮食而未采取有效隔离措施",
-                        "急性粟粒型肺结核的患者，结核杆菌经血行传播",
-                        "肠道附近脏器发生结核"
-                    ],
-                    "question": "肠结核的病因及主要感染途径有哪些？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "B"
-                    ],
-                    "answer": [
-                        "内科",
-                        "外科",
-                        "结核病院普外科",
-                        "普通消化科"
-                    ],
-                    "question": "怀疑肠结核应该去哪个科室就诊？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "D"
-                    ],
-                    "answer": [
-                        "结肠癌",
-                        "胃痛",
-                        "克罗恩病",
-                        "阑尾炎"
-                    ],
-                    "question": "肠结核需要与哪些疾病相鉴别？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C", "D"
-                    ],
-                    "answer": [
-                        "肝毒性反应",
-                        "胃肠反应",
-                        '外周神经炎',
-                        '高尿酸血症'
-                    ],
-                    "question": "服用抗结核药物治疗后会出现哪些不良反应？",
-                    "selectType": 1,
-                    "fraction": 20
-                }
-            ]
-        }
-    }, function (err, data) {
-        // console.log(data);
+    // videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c9871c' }, {
+    //     '$set': {
+    //         test: [
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "增生型",
+    //                     "肿瘤型",
+    //                     "先天型",
+    //                     "溃疡型"
+    //                 ],
+    //                 "question": "肠结核的分型主要有哪些？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "开放性肺结核患者咽下含有结核菌的痰液",
+    //                     "正常人与开放性肺结核患者共同饮食而未采取有效隔离措施",
+    //                     "急性粟粒型肺结核的患者，结核杆菌经血行传播",
+    //                     "肠道附近脏器发生结核"
+    //                 ],
+    //                 "question": "肠结核的病因及主要感染途径有哪些？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "B"
+    //                 ],
+    //                 "answer": [
+    //                     "内科",
+    //                     "外科",
+    //                     "结核病院普外科",
+    //                     "普通消化科"
+    //                 ],
+    //                 "question": "怀疑肠结核应该去哪个科室就诊？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "D"
+    //                 ],
+    //                 "answer": [
+    //                     "结肠癌",
+    //                     "胃痛",
+    //                     "克罗恩病",
+    //                     "阑尾炎"
+    //                 ],
+    //                 "question": "肠结核需要与哪些疾病相鉴别？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "肝毒性反应",
+    //                     "胃肠反应",
+    //                     '外周神经炎',
+    //                     '高尿酸血症'
+    //                 ],
+    //                 "question": "服用抗结核药物治疗后会出现哪些不良反应？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             }
+    //         ]
+    //     }
+    // }, function (err, data) {
+    //     // console.log(data);
 
-    })
+    // })
 
-    videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c986fd' }, {
-        '$set': {
-            test: [
-                {
-                    "trueAnswer": [
-                        "A", "D"
-                    ],
-                    "answer": [
-                        "疼痛部位有时可摸到肿块",
-                        "一般会伴随恶心、呕吐、厌食",
-                        "四肢无力",
-                        "突发的腹痛"
-                    ],
-                    "question": "大网膜炎有什么症状？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "D"
-                    ],
-                    "answer": [
-                        "通过 CT 排查其他疾病",
-                        "通过 B 超排查其他疾病",
-                        "照胃镜",
-                        "检测血常规"
-                    ],
-                    "question": "诊断大网膜炎要做什么检查？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A", "B", "C", "D"
-                    ],
-                    "answer": [
-                        "需排查有无血液系统疾病、血管疾病、感染性疾病等",
-                        "促进胃肠蠕动",
-                        "恢复饮食后需减少食用不容易消化的食物",
-                        "增加蔬菜、水果摄入，注意保持大便通畅"
-                    ],
-                    "question": "大网膜炎在生活中要注意什么？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "B"
-                    ],
-                    "answer": [
-                        "是",
-                        "不是",
-                    ],
-                    "question": "大网膜炎的病因是否已明确？",
-                    "selectType": 1,
-                    "fraction": 20
-                },
-                {
-                    "trueAnswer": [
-                        "A"
-                    ],
-                    "answer": [
-                        "是",
-                        "不是",
-                    ],
-                    "question": "原发性急性大网膜炎是否是急腹症的一种",
-                    "selectType": 1,
-                    "fraction": 20
-                }
-            ]
-        }
-    }, function (err, data) {
-        // console.log(data);
+    // videoNotOfent.findOneAndUpdate({ videoId: '5c6567544143192330c986fd' }, {
+    //     '$set': {
+    //         test: [
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "疼痛部位有时可摸到肿块",
+    //                     "一般会伴随恶心、呕吐、厌食",
+    //                     "四肢无力",
+    //                     "突发的腹痛"
+    //                 ],
+    //                 "question": "大网膜炎有什么症状？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "通过 CT 排查其他疾病",
+    //                     "通过 B 超排查其他疾病",
+    //                     "照胃镜",
+    //                     "检测血常规"
+    //                 ],
+    //                 "question": "诊断大网膜炎要做什么检查？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A", "B", "C", "D"
+    //                 ],
+    //                 "answer": [
+    //                     "需排查有无血液系统疾病、血管疾病、感染性疾病等",
+    //                     "促进胃肠蠕动",
+    //                     "恢复饮食后需减少食用不容易消化的食物",
+    //                     "增加蔬菜、水果摄入，注意保持大便通畅"
+    //                 ],
+    //                 "question": "大网膜炎在生活中要注意什么？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "B"
+    //                 ],
+    //                 "answer": [
+    //                     "是",
+    //                     "不是",
+    //                 ],
+    //                 "question": "大网膜炎的病因是否已明确？",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             },
+    //             {
+    //                 "trueAnswer": [
+    //                     "A"
+    //                 ],
+    //                 "answer": [
+    //                     "是",
+    //                     "不是",
+    //                 ],
+    //                 "question": "原发性急性大网膜炎是否是急腹症的一种",
+    //                 "selectType": 1,
+    //                 "fraction": 20
+    //             }
+    //         ]
+    //     }
+    // }, function (err, data) {
+    //     // console.log(data);
 
-    })
+    // })
 
     videoNotOfent.findOne(
         { videoId: id },
